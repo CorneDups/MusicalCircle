@@ -1,0 +1,25 @@
+{
+  "title": "Dawn Collection",
+  "artist": "Music Orbit Samples",
+  "description": "Warm tones and widening horizons. This album uses a wave-ring visualizer and gently pulsing artwork.",
+  "cover": "cover.jpg",
+  "background": "background.jpg",
+  "accent": "#f0b76e",
+  "accentSecondary": "#77b9d7",
+  "visualizer": "wave-ring",
+  "visualizerIntensity": 1.15,
+  "artworkMotion": "pulse",
+  "preferEmbeddedArtwork": true,
+  "tracks": {
+    "Sample 01 - First Light.mp3": {
+      "title": "First Light"
+    },
+    "Sample 03 - Blue Horizon.mp3": {
+      "title": "Blue Horizon",
+      "artwork": "Sample 03 - Blue Horizon.jpg"
+    },
+    "Sample 06 - Homeward.mp3": {
+      "title": "Homeward"
+    }
+  }
+}

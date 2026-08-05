@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#090d18">
+  <title>Circular Music Player</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <div id="albumBackdrop" class="album-backdrop" aria-hidden="true"></div>
+
+  <main class="app-shell">
+    <header class="site-header">
+      <p class="eyebrow">Circular music collection</p>
+      <h1>Music Orbit</h1>
+      <p class="subtitle">Choose an album, then enter its visual world.</p>
+    </header>
+
+    <section class="library-controls" aria-label="Music folder selection">
+      <label for="folderSelect">Music folder</label>
+      <div class="folder-selection-row">
+        <select id="folderSelect" aria-describedby="folderSummary">
+          <option>Loading music folders…</option>
+        </select>
+        <span id="folderSummary" class="folder-summary">Scanning collection…</span>
+      </div>
+
+      <div class="album-information">
+        <div>
+          <p class="album-kicker">Selected album</p>
+          <h2 id="albumTitle">Loading…</h2>
+          <p id="albumArtist" class="album-artist"></p>
+          <p id="albumDescription" class="album-description"></p>
+        </div>
+        <span id="visualStyleBadge" class="visual-style-badge">Radial bars</span>
+      </div>
+    </section>
+
+    <section class="player-stage" aria-label="Circular song player">
+      <div id="musicCircle" class="music-circle" aria-live="polite">
+        <canvas id="visualizerCanvas" class="visualizer-canvas" aria-hidden="true"></canvas>
+        <div class="orbit orbit-outer" aria-hidden="true"></div>
+        <div class="orbit orbit-inner" aria-hidden="true"></div>
+
+        <div id="centrePlayer" class="centre-player motion-pulse">
+          <div class="artwork-disc" aria-hidden="true">
+            <img id="artworkImage" class="artwork-image" alt="" hidden>
+            <div id="artworkFallback" class="artwork-fallback">MO</div>
+            <div class="artwork-shade"></div>
+          </div>
+
+          <div class="centre-content">
+            <p class="centre-label">Now playing</p>
+            <h2 id="nowPlaying">Select a song</h2>
+            <p id="trackArtist" class="track-artist"></p>
+            <p id="songPosition" class="song-position">0 of 0</p>
+
+            <div class="transport-controls" aria-label="Playback controls">
+              <button id="previousButton" class="transport-button" type="button" aria-label="Previous song">⏮</button>
+              <button id="playButton" class="play-button" type="button" aria-label="Play or pause">▶</button>
+              <button id="nextButton" class="transport-button" type="button" aria-label="Next song">⏭</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="songButtons" class="song-buttons" aria-label="Songs"></div>
+      </div>
+    </section>
+
+    <section class="timeline-panel" aria-label="Playback timeline">
+      <span id="currentTime">0:00</span>
+      <input id="progress" type="range" min="0" max="1000" value="0" aria-label="Song progress">
+      <span id="duration">0:00</span>
+    </section>
+
+    <section class="secondary-controls" aria-label="Additional playback controls">
+      <label class="volume-control" for="volume">
+        <span>Volume</span>
+        <input id="volume" type="range" min="0" max="1" step="0.01" value="0.8">
+      </label>
+      <label class="autoplay-control" for="autoplay">
+        <input id="autoplay" type="checkbox">
+        <span>Play next song automatically</span>
+      </label>
+    </section>
+
+    <p id="statusMessage" class="status-message" role="status"></p>
+    <audio id="audioPlayer" preload="metadata" crossorigin="anonymous"></audio>
+  </main>
+
+  <noscript>This music player requires JavaScript.</noscript>
+  <script src="./songs.js"></script>
+  <script src="./app.js" defer></script>
+</body>
+</html>

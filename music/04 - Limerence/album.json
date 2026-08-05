@@ -1,0 +1,11 @@
+{
+  "title": "Limerence",
+  "artist": "Musical Circle",
+  "description": "Tender and unresolved love, lit by rose-colored sparks and drifting orbitals.",
+  "accent": "#be185d",
+  "accentSecondary": "#f472b6",
+  "visualizer": "constellation",
+  "visualizerIntensity": 1.08,
+  "artworkMotion": "pulse",
+  "preferEmbeddedArtwork": true
+}

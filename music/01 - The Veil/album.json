@@ -1,0 +1,11 @@
+{
+  "title": "The Veil",
+  "artist": "Musical Circle",
+  "description": "A veiled and intimate passage, carried by hidden light and slow-moving constellations.",
+  "accent": "#5b2e91",
+  "accentSecondary": "#9d7cf5",
+  "visualizer": "constellation",
+  "visualizerIntensity": 1.12,
+  "artworkMotion": "rotate",
+  "preferEmbeddedArtwork": true
+}

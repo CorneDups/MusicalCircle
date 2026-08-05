@@ -1,0 +1,11 @@
+{
+  "title": "Awakening",
+  "artist": "Musical Circle",
+  "description": "A rising arc from threshold to grace, with warm embers and open horizons.",
+  "accent": "#c2410c",
+  "accentSecondary": "#2dd4bf",
+  "visualizer": "wave-ring",
+  "visualizerIntensity": 1.24,
+  "artworkMotion": "pulse",
+  "preferEmbeddedArtwork": true
+}

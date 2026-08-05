@@ -1,4 +1,4 @@
-import { cp, mkdir, rm, writeFile } from "node:fs/promises";
+import { copyFile, mkdir, readdir, rm, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
@@ -22,12 +22,34 @@ await mkdir(outputDirectory, { recursive: true });
 
 const filesToCopy = ["index.html", "styles.css", "app.js", "songs.js", "songs.json"];
 for (const file of filesToCopy) {
-  await cp(path.join(projectRoot, file), path.join(outputDirectory, file));
+  await copyFile(path.join(projectRoot, file), path.join(outputDirectory, file));
 }
 
-await cp(path.join(projectRoot, "music"), path.join(outputDirectory, "music"), {
-  recursive: true
-});
+await mkdir(path.join(outputDirectory, "music"), { recursive: true });
+const sourceMusic = path.join(projectRoot, "music");
+const destinationMusic = path.join(outputDirectory, "music");
+const entries = await readdir(sourceMusic, { withFileTypes: true });
+for (const entry of entries) {
+  const sourcePath = path.join(sourceMusic, entry.name);
+  const destinationPath = path.join(destinationMusic, entry.name);
+  const entryStats = await stat(sourcePath);
+  if (entryStats.isDirectory()) {
+    await mkdir(destinationPath, { recursive: true });
+    const childEntries = await readdir(sourcePath, { withFileTypes: true });
+    for (const childEntry of childEntries) {
+      const childSourcePath = path.join(sourcePath, childEntry.name);
+      const childDestinationPath = path.join(destinationPath, childEntry.name);
+      const childStats = await stat(childSourcePath);
+      if (childStats.isDirectory()) {
+        await mkdir(childDestinationPath, { recursive: true });
+      } else {
+        await copyFile(childSourcePath, childDestinationPath);
+      }
+    }
+  } else {
+    await copyFile(sourcePath, destinationPath);
+  }
+}
 
 await writeFile(path.join(outputDirectory, ".nojekyll"), "", "utf8");
 console.log(`Built GitHub Pages site in ${outputDirectory}`);

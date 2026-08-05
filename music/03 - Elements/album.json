@@ -1,0 +1,11 @@
+{
+  "title": "Elements",
+  "artist": "Musical Circle",
+  "description": "An elemental journey of creation, motion, and atomic force.",
+  "accent": "#0f766e",
+  "accentSecondary": "#f59e0b",
+  "visualizer": "radial-bars",
+  "visualizerIntensity": 1.35,
+  "artworkMotion": "rotate",
+  "preferEmbeddedArtwork": true
+}

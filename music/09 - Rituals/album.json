@@ -1,0 +1,11 @@
+{
+  "title": "Rituals",
+  "artist": "Musical Circle",
+  "description": "A ceremonial and repeating pattern, with rhythmic pulses and sacred motion.",
+  "accent": "#7e22ce",
+  "accentSecondary": "#facc15",
+  "visualizer": "radial-bars",
+  "visualizerIntensity": 1.28,
+  "artworkMotion": "rotate",
+  "preferEmbeddedArtwork": true
+}

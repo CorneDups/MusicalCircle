@@ -1,0 +1,11 @@
+{
+  "title": "Garden Seals",
+  "artist": "Musical Circle",
+  "description": "A quiet garden of memory and renewal, blooming in soft, organic motion.",
+  "accent": "#166534",
+  "accentSecondary": "#86efac",
+  "visualizer": "constellation",
+  "visualizerIntensity": 1.04,
+  "artworkMotion": "pulse",
+  "preferEmbeddedArtwork": true
+}

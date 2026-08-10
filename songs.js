@@ -1,9 +1,9 @@
 // Automatically generated. Do not edit by hand.
 window.SONGS = {
   "version": 3,
-  "generatedAt": "2026-08-05T20:39:41.987Z",
-  "folderCount": 10,
-  "totalSongs": 114,
+  "generatedAt": "2026-08-10T12:38:19.028Z",
+  "folderCount": 11,
+  "totalSongs": 115,
   "folders": [
     {
       "id": 1,
@@ -1012,6 +1012,34 @@ window.SONGS = {
         }
       ],
       "songCount": 10
+    },
+    {
+      "id": 11,
+      "path": "11 - Sacred Heart",
+      "name": "11 - Sacred Heart",
+      "album": {
+        "title": "11 - Sacred Heart",
+        "artist": "",
+        "description": "",
+        "cover": null,
+        "background": null,
+        "accent": "",
+        "accentSecondary": "",
+        "visualizer": "radial-bars",
+        "visualizerIntensity": 1,
+        "artworkMotion": "pulse",
+        "preferEmbeddedArtwork": true
+      },
+      "songs": [
+        {
+          "id": 1,
+          "file": "11 - Sacred Heart/01 - Dayenu.mp3",
+          "title": "01 - Dayenu",
+          "artist": "",
+          "artwork": null
+        }
+      ],
+      "songCount": 1
     }
   ]
 };

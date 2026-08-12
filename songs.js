@@ -1,9 +1,9 @@
 // Automatically generated. Do not edit by hand.
 window.SONGS = {
   "version": 3,
-  "generatedAt": "2026-08-10T12:38:19.028Z",
+  "generatedAt": "2026-08-12T15:28:15.378Z",
   "folderCount": 11,
-  "totalSongs": 115,
+  "totalSongs": 116,
   "folders": [
     {
       "id": 1,
@@ -1037,9 +1037,16 @@ window.SONGS = {
           "title": "01 - Dayenu",
           "artist": "",
           "artwork": null
+        },
+        {
+          "id": 2,
+          "file": "11 - Sacred Heart/02 - Pigs and Pearls.mp3",
+          "title": "02 - Pigs and Pearls",
+          "artist": "",
+          "artwork": null
         }
       ],
-      "songCount": 1
+      "songCount": 2
     }
   ]
 };

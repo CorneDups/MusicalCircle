@@ -1,7 +1,7 @@
 // Automatically generated. Do not edit by hand.
 window.SONGS = {
   "version": 3,
-  "generatedAt": "2026-08-12T15:28:15.378Z",
+  "generatedAt": "2026-08-15T17:58:07.122Z",
   "folderCount": 11,
   "totalSongs": 116,
   "folders": [

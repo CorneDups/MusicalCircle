@@ -7,5 +7,6 @@
   "visualizer": "radial-bars",
   "visualizerIntensity": 1.35,
   "artworkMotion": "rotate",
-  "preferEmbeddedArtwork": true
+  "preferEmbeddedArtwork": true,
+  "Cover": "my-album-art.jpg"
 }

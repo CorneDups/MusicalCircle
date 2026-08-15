@@ -171,6 +171,24 @@
     statusMessage.classList.toggle("error", isError);
   }
 
+  function updateMediaSession(song = null) {
+    if (!("mediaSession" in navigator)) return;
+
+    if (song && "MediaMetadata" in window) {
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: song.title,
+        artist: song.artist || state.album.artist || "",
+        album: state.album.title
+      });
+    } else {
+      navigator.mediaSession.metadata = null;
+    }
+  }
+
+  function setMediaSessionPlaybackState(value) {
+    if ("mediaSession" in navigator) navigator.mediaSession.playbackState = value;
+  }
+
   function validCssColor(value) {
     return typeof value === "string" && value.trim() && CSS.supports("color", value.trim());
   }
@@ -433,6 +451,8 @@
     playButton.textContent = "▶";
     playButton.setAttribute("aria-label", "Play");
     centrePlayer.classList.remove("is-playing");
+    updateMediaSession();
+    setMediaSessionPlaybackState("none");
     setKnownArtwork();
   }
 
@@ -518,7 +538,7 @@
 
   function visualizerName(style) {
     return {
-      "radial-bars": "Radial bars",
+      "radial-bars": "Psychedelic spectrum",
       "wave-ring": "Wave ring",
       constellation: "Constellation"
     }[style] || "Radial bars";
@@ -626,6 +646,7 @@
     nowPlaying.title = song.title;
     trackArtist.textContent = song.artist || state.album.artist;
     songPosition.textContent = `${safeIndex + 1} of ${state.songs.length}`;
+    updateMediaSession(song);
     updateActiveButton();
     updateSongArtwork(song);
     setStatus(shouldPlay ? `Loading “${song.title}”…` : `Selected “${song.title}”.`);
@@ -709,27 +730,73 @@
   }
 
   function drawRadialBars(ctx, values, cx, cy, size, time) {
-    const bars = 96;
-    const baseRadius = size * 0.195;
-    const maximumLength = size * 0.13 * state.album.visualizerIntensity;
+    const bars = 72;
+    const baseRadius = size * 0.18;
+    const maximumLength = size * 0.2 * state.album.visualizerIntensity;
+    const phase = time * 0.00018;
+    const outerRadius = baseRadius + maximumLength;
+    const accent = getComputedStyle(document.documentElement).getPropertyValue("--accent").trim();
+    const secondary = getComputedStyle(document.documentElement).getPropertyValue("--accent-secondary").trim();
+    const gradient = ctx.createLinearGradient(cx - outerRadius, cy - outerRadius, cx + outerRadius, cy + outerRadius);
+    gradient.addColorStop(0, secondary);
+    gradient.addColorStop(0.5, accent);
+    gradient.addColorStop(1, secondary);
+
+    ctx.strokeStyle = gradient;
     ctx.lineCap = "round";
-    ctx.lineWidth = Math.max(1.2, size * 0.0025);
+    ctx.shadowBlur = size * 0.018;
+    ctx.shadowColor = accent;
 
     for (let index = 0; index < bars; index += 1) {
-      const angle = -Math.PI / 2 + (Math.PI * 2 * index) / bars;
-      const value = values[Math.floor((index / bars) * values.length * 0.74)] / 255;
-      const breathing = audio.paused ? 0.08 * Math.sin(time * 0.0015 + index * 0.14) : 0;
-      const length = size * 0.015 + Math.max(0, value + breathing) * maximumLength;
-      const startX = cx + Math.cos(angle) * baseRadius;
-      const startY = cy + Math.sin(angle) * baseRadius;
-      const endX = cx + Math.cos(angle) * (baseRadius + length);
-      const endY = cy + Math.sin(angle) * (baseRadius + length);
-      ctx.globalAlpha = 0.3 + value * 0.7;
-      ctx.beginPath();
-      ctx.moveTo(startX, startY);
-      ctx.lineTo(endX, endY);
-      ctx.stroke();
+      const normalized = index / (bars - 1);
+      const startBin = Math.max(2, Math.floor(Math.pow(normalized, 1.65) * values.length * 0.78));
+      const endBin = Math.max(startBin + 1, Math.floor(Math.pow((index + 1) / bars, 1.65) * values.length * 0.78));
+      let total = 0;
+      let samples = 0;
+
+      for (let bin = startBin; bin <= endBin && bin < values.length; bin += 1) {
+        total += values[bin];
+        samples += 1;
+      }
+
+      const average = samples > 0 ? total / samples / 255 : 0;
+      const idleMovement = audio.paused ? 0.06 * (1 + Math.sin(time * 0.0014 + index * 0.3)) : 0;
+      const value = Math.min(1, Math.pow(average, 0.72) + idleMovement);
+      const angle = -Math.PI / 2 + (Math.PI * 2 * index) / bars + phase;
+      const mirroredAngle = -Math.PI / 2 - (Math.PI * 2 * index) / bars - phase;
+      const length = size * 0.025 + value * maximumLength;
+
+      [angle, mirroredAngle].forEach((barAngle) => {
+        const startX = cx + Math.cos(barAngle) * baseRadius;
+        const startY = cy + Math.sin(barAngle) * baseRadius;
+        const endX = cx + Math.cos(barAngle) * (baseRadius + length);
+        const endY = cy + Math.sin(barAngle) * (baseRadius + length);
+        ctx.globalAlpha = 0.2 + value * 0.8;
+        ctx.lineWidth = Math.max(1.2, size * (0.002 + value * 0.003));
+        ctx.beginPath();
+        ctx.moveTo(startX, startY);
+        ctx.lineTo(endX, endY);
+        ctx.stroke();
+      });
     }
+
+    ctx.shadowBlur = 0;
+    ctx.globalAlpha = 0.45;
+    ctx.lineWidth = Math.max(1, size * 0.002);
+    ctx.beginPath();
+    for (let index = 0; index <= bars; index += 1) {
+      const normalized = index / bars;
+      const bin = Math.min(values.length - 1, Math.floor(Math.pow(normalized, 1.65) * values.length * 0.78));
+      const value = Math.pow(values[bin] / 255, 0.72);
+      const angle = -Math.PI / 2 + (Math.PI * 2 * index) / bars + phase;
+      const radius = baseRadius + size * 0.012 + value * size * 0.055;
+      const x = cx + Math.cos(angle) * radius;
+      const y = cy + Math.sin(angle) * radius;
+      if (index === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+    ctx.globalAlpha = 1;
   }
 
   function drawWaveRing(ctx, values, cx, cy, size, time) {
@@ -824,6 +891,23 @@
   previousButton.addEventListener("click", () => goToRelativeSong(-1));
   nextButton.addEventListener("click", () => goToRelativeSong(1));
 
+  if ("mediaSession" in navigator) {
+    const mediaSessionActions = {
+      play: () => togglePlayback(),
+      pause: () => audio.pause(),
+      previoustrack: () => goToRelativeSong(-1),
+      nexttrack: () => goToRelativeSong(1)
+    };
+
+    Object.entries(mediaSessionActions).forEach(([action, handler]) => {
+      try {
+        navigator.mediaSession.setActionHandler(action, handler);
+      } catch (error) {
+        console.debug(`Media Session action “${action}” is unavailable.`, error);
+      }
+    });
+  }
+
   progress.addEventListener("input", () => {
     state.seeking = true;
     if (Number.isFinite(audio.duration) && audio.duration > 0) {
@@ -847,6 +931,7 @@
     playButton.setAttribute("aria-label", "Pause");
     centrePlayer.classList.add("is-playing");
     const song = state.songs[state.currentIndex];
+    setMediaSessionPlaybackState("playing");
     setStatus(song ? `Playing “${song.title}”.` : "Playing.");
   });
 
@@ -854,6 +939,7 @@
     playButton.textContent = "▶";
     playButton.setAttribute("aria-label", "Play");
     centrePlayer.classList.remove("is-playing");
+    setMediaSessionPlaybackState("paused");
   });
 
   audio.addEventListener("loadedmetadata", updateProgress);
@@ -861,12 +947,15 @@
   audio.addEventListener("timeupdate", updateProgress);
 
   audio.addEventListener("ended", () => {
-    if (autoplay.checked) goToRelativeSong(1, true);
+    if (autoplay.checked && state.currentIndex < state.songs.length - 1) {
+      selectSong(state.currentIndex + 1, true);
+    }
     else {
       progress.value = "1000";
       playButton.textContent = "▶";
       centrePlayer.classList.remove("is-playing");
-      setStatus("Song finished.");
+      setMediaSessionPlaybackState("paused");
+      setStatus(autoplay.checked ? "Selection finished." : "Song finished.");
     }
   });
 

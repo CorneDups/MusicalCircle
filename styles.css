@@ -413,11 +413,13 @@ select {
   position: absolute;
   z-index: 6;
   inset: 0;
+  pointer-events: none;
 }
 
 .song-button {
   --button-scale: 1;
   position: absolute;
+  pointer-events: auto;
   width: clamp(68px, 13.5%, 118px);
   min-height: clamp(34px, 5vw, 46px);
   padding: 0.45rem 0.6rem;

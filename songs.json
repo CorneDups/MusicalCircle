@@ -1,8 +1,8 @@
 {
   "version": 3,
-  "generatedAt": "2026-08-15T17:58:07.122Z",
-  "folderCount": 11,
-  "totalSongs": 116,
+  "generatedAt": "2026-08-15T18:13:41.065Z",
+  "folderCount": 12,
+  "totalSongs": 121,
   "folders": [
     {
       "id": 1,
@@ -622,8 +622,64 @@
     },
     {
       "id": 6,
-      "path": "06 - Divine Seeds",
-      "name": "06 - Divine Seeds",
+      "path": "06 - Daniel",
+      "name": "06 - Daniel",
+      "album": {
+        "title": "06 - Daniel",
+        "artist": "",
+        "description": "",
+        "cover": null,
+        "background": null,
+        "accent": "",
+        "accentSecondary": "",
+        "visualizer": "radial-bars",
+        "visualizerIntensity": 1,
+        "artworkMotion": "pulse",
+        "preferEmbeddedArtwork": true
+      },
+      "songs": [
+        {
+          "id": 1,
+          "file": "06 - Daniel/01_Not by Bread Alone.mp3",
+          "title": "01_Not by Bread Alone",
+          "artist": "",
+          "artwork": null
+        },
+        {
+          "id": 2,
+          "file": "06 - Daniel/02_In the Night He Speaks.mp3",
+          "title": "02_In the Night He Speaks",
+          "artist": "",
+          "artwork": null
+        },
+        {
+          "id": 3,
+          "file": "06 - Daniel/03_Even If He Does Not.mp3",
+          "title": "03_Even If He Does Not",
+          "artist": "",
+          "artwork": null
+        },
+        {
+          "id": 4,
+          "file": "06 - Daniel/04_Write Upon My Heart.mp3",
+          "title": "04_Write Upon My Heart",
+          "artist": "",
+          "artwork": null
+        },
+        {
+          "id": 5,
+          "file": "06 - Daniel/05_Sealed for Glory.mp3",
+          "title": "05_Sealed for Glory",
+          "artist": "",
+          "artwork": null
+        }
+      ],
+      "songCount": 5
+    },
+    {
+      "id": 7,
+      "path": "07 - Divine Seeds",
+      "name": "07 - Divine Seeds",
       "album": {
         "title": "Divine Seeds",
         "artist": "Musical Circle",
@@ -640,56 +696,56 @@
       "songs": [
         {
           "id": 1,
-          "file": "06 - Divine Seeds/S1_ Steadfast Peace.mp3",
+          "file": "07 - Divine Seeds/S1_ Steadfast Peace.mp3",
           "title": "S1_ Steadfast Peace",
           "artist": "Musical Circle",
           "artwork": null
         },
         {
           "id": 2,
-          "file": "06 - Divine Seeds/S2_ Playful Wonder.mp3",
+          "file": "07 - Divine Seeds/S2_ Playful Wonder.mp3",
           "title": "S2_ Playful Wonder",
           "artist": "Musical Circle",
           "artwork": null
         },
         {
           "id": 3,
-          "file": "06 - Divine Seeds/S3_ Abiding Presence.mp3",
+          "file": "07 - Divine Seeds/S3_ Abiding Presence.mp3",
           "title": "S3_ Abiding Presence",
           "artist": "Musical Circle",
           "artwork": null
         },
         {
           "id": 4,
-          "file": "06 - Divine Seeds/S4_ Courageous Vulnerability.mp3",
+          "file": "07 - Divine Seeds/S4_ Courageous Vulnerability.mp3",
           "title": "S4_ Courageous Vulnerability",
           "artist": "Musical Circle",
           "artwork": null
         },
         {
           "id": 5,
-          "file": "06 - Divine Seeds/S5_ Rest in My Presence.mp3",
+          "file": "07 - Divine Seeds/S5_ Rest in My Presence.mp3",
           "title": "S5_ Rest in My Presence",
           "artist": "Musical Circle",
           "artwork": null
         },
         {
           "id": 6,
-          "file": "06 - Divine Seeds/S6_ Joy without Conditions.mp3",
+          "file": "07 - Divine Seeds/S6_ Joy without Conditions.mp3",
           "title": "S6_ Joy without Conditions",
           "artist": "Musical Circle",
           "artwork": null
         },
         {
           "id": 7,
-          "file": "06 - Divine Seeds/S7_ Abiding Joy.mp3",
+          "file": "07 - Divine Seeds/S7_ Abiding Joy.mp3",
           "title": "S7_ Abiding Joy",
           "artist": "Musical Circle",
           "artwork": null
         },
         {
           "id": 8,
-          "file": "06 - Divine Seeds/S8_ Trust in Love.mp3",
+          "file": "07 - Divine Seeds/S8_ Trust in Love.mp3",
           "title": "S8_ Trust in Love",
           "artist": "Musical Circle",
           "artwork": null
@@ -698,9 +754,9 @@
       "songCount": 8
     },
     {
-      "id": 7,
-      "path": "07 - Sermon Songs",
-      "name": "07 - Sermon Songs",
+      "id": 8,
+      "path": "08 - Sermon Songs",
+      "name": "08 - Sermon Songs",
       "album": {
         "title": "Sermon Songs",
         "artist": "Musical Circle",
@@ -717,35 +773,35 @@
       "songs": [
         {
           "id": 1,
-          "file": "07 - Sermon Songs/Mother of Great Waters.mp3",
+          "file": "08 - Sermon Songs/Mother of Great Waters.mp3",
           "title": "Mother of Great Waters",
           "artist": "Musical Circle",
           "artwork": null
         },
         {
           "id": 2,
-          "file": "07 - Sermon Songs/Seeds of Trust.mp3",
+          "file": "08 - Sermon Songs/Seeds of Trust.mp3",
           "title": "Seeds of Trust",
           "artist": "Musical Circle",
           "artwork": null
         },
         {
           "id": 3,
-          "file": "07 - Sermon Songs/Stories old and young.mp3",
+          "file": "08 - Sermon Songs/Stories old and young.mp3",
           "title": "Stories old and young",
           "artist": "Musical Circle",
           "artwork": null
         },
         {
           "id": 4,
-          "file": "07 - Sermon Songs/The Gratitude Spiral.mp3",
+          "file": "08 - Sermon Songs/The Gratitude Spiral.mp3",
           "title": "The Gratitude Spiral",
           "artist": "Musical Circle",
           "artwork": null
         },
         {
           "id": 5,
-          "file": "07 - Sermon Songs/Who to hold_.mp3",
+          "file": "08 - Sermon Songs/Who to hold_.mp3",
           "title": "Who to hold_",
           "artist": "Musical Circle",
           "artwork": null
@@ -754,9 +810,9 @@
       "songCount": 5
     },
     {
-      "id": 8,
-      "path": "08 - Psalms",
-      "name": "08 - Psalms",
+      "id": 9,
+      "path": "09 - Psalms",
+      "name": "09 - Psalms",
       "album": {
         "title": "Psalms",
         "artist": "Musical Circle",
@@ -773,70 +829,70 @@
       "songs": [
         {
           "id": 1,
-          "file": "08 - Psalms/Olive Tree.mp3",
+          "file": "09 - Psalms/Olive Tree.mp3",
           "title": "Olive Tree",
           "artist": "Musical Circle",
           "artwork": null
         },
         {
           "id": 2,
-          "file": "08 - Psalms/Our Father.mp3",
+          "file": "09 - Psalms/Our Father.mp3",
           "title": "Our Father",
           "artist": "Musical Circle",
           "artwork": null
         },
         {
           "id": 3,
-          "file": "08 - Psalms/Psalm 1.mp3",
+          "file": "09 - Psalms/Psalm 1.mp3",
           "title": "Psalm 1",
           "artist": "Musical Circle",
           "artwork": null
         },
         {
           "id": 4,
-          "file": "08 - Psalms/Psalm 27.mp3",
+          "file": "09 - Psalms/Psalm 27.mp3",
           "title": "Psalm 27",
           "artist": "Musical Circle",
           "artwork": null
         },
         {
           "id": 5,
-          "file": "08 - Psalms/Psalm 30.mp3",
+          "file": "09 - Psalms/Psalm 30.mp3",
           "title": "Psalm 30",
           "artist": "Musical Circle",
           "artwork": null
         },
         {
           "id": 6,
-          "file": "08 - Psalms/Psalm 46.mp3",
+          "file": "09 - Psalms/Psalm 46.mp3",
           "title": "Psalm 46",
           "artist": "Musical Circle",
           "artwork": null
         },
         {
           "id": 7,
-          "file": "08 - Psalms/Psalm 61.mp3",
+          "file": "09 - Psalms/Psalm 61.mp3",
           "title": "Psalm 61",
           "artist": "Musical Circle",
           "artwork": null
         },
         {
           "id": 8,
-          "file": "08 - Psalms/Psalm 62.mp3",
+          "file": "09 - Psalms/Psalm 62.mp3",
           "title": "Psalm 62",
           "artist": "Musical Circle",
           "artwork": null
         },
         {
           "id": 9,
-          "file": "08 - Psalms/Psalm 73.mp3",
+          "file": "09 - Psalms/Psalm 73.mp3",
           "title": "Psalm 73",
           "artist": "Musical Circle",
           "artwork": null
         },
         {
           "id": 10,
-          "file": "08 - Psalms/Psalm 107.mp3",
+          "file": "09 - Psalms/Psalm 107.mp3",
           "title": "Psalm 107",
           "artist": "Musical Circle",
           "artwork": null
@@ -845,9 +901,9 @@
       "songCount": 10
     },
     {
-      "id": 9,
-      "path": "09 - Rituals",
-      "name": "09 - Rituals",
+      "id": 10,
+      "path": "10 - Rituals",
+      "name": "10 - Rituals",
       "album": {
         "title": "Rituals",
         "artist": "Musical Circle",
@@ -864,56 +920,56 @@
       "songs": [
         {
           "id": 1,
-          "file": "09 - Rituals/Dance in the Wounds (V2).mp3",
+          "file": "10 - Rituals/Dance in the Wounds (V2).mp3",
           "title": "Dance in the Wounds (V2)",
           "artist": "Musical Circle",
           "artwork": null
         },
         {
           "id": 2,
-          "file": "09 - Rituals/Garden in Ruins.mp3",
+          "file": "10 - Rituals/Garden in Ruins.mp3",
           "title": "Garden in Ruins",
           "artist": "Musical Circle",
           "artwork": null
         },
         {
           "id": 3,
-          "file": "09 - Rituals/No Apology.mp3",
+          "file": "10 - Rituals/No Apology.mp3",
           "title": "No Apology",
           "artist": "Musical Circle",
           "artwork": null
         },
         {
           "id": 4,
-          "file": "09 - Rituals/Prayer Warriors.mp3",
+          "file": "10 - Rituals/Prayer Warriors.mp3",
           "title": "Prayer Warriors",
           "artist": "Musical Circle",
           "artwork": null
         },
         {
           "id": 5,
-          "file": "09 - Rituals/Safe in His Arms.mp3",
+          "file": "10 - Rituals/Safe in His Arms.mp3",
           "title": "Safe in His Arms",
           "artist": "Musical Circle",
           "artwork": null
         },
         {
           "id": 6,
-          "file": "09 - Rituals/The Alchemist_s Garden v2.mp3",
+          "file": "10 - Rituals/The Alchemist_s Garden v2.mp3",
           "title": "The Alchemist_s Garden v2",
           "artist": "Musical Circle",
           "artwork": null
         },
         {
           "id": 7,
-          "file": "09 - Rituals/The Field  (Poem - Rock).mp3",
+          "file": "10 - Rituals/The Field  (Poem - Rock).mp3",
           "title": "The Field  (Poem - Rock)",
           "artist": "Musical Circle",
           "artwork": null
         },
         {
           "id": 8,
-          "file": "09 - Rituals/Wine.mp3",
+          "file": "10 - Rituals/Wine.mp3",
           "title": "Wine",
           "artist": "Musical Circle",
           "artwork": null
@@ -922,9 +978,9 @@
       "songCount": 8
     },
     {
-      "id": 10,
-      "path": "10 - Garden Seals",
-      "name": "10 - Garden Seals",
+      "id": 11,
+      "path": "11 - Garden Seals",
+      "name": "11 - Garden Seals",
       "album": {
         "title": "Garden Seals",
         "artist": "Musical Circle",
@@ -941,70 +997,70 @@
       "songs": [
         {
           "id": 1,
-          "file": "10 - Garden Seals/01 - Adam, first and last.mp3",
+          "file": "11 - Garden Seals/01 - Adam, first and last.mp3",
           "title": "01 - Adam, first and last",
           "artist": "Musical Circle",
           "artwork": null
         },
         {
           "id": 2,
-          "file": "10 - Garden Seals/02 - No Shame.mp3",
+          "file": "11 - Garden Seals/02 - No Shame.mp3",
           "title": "02 - No Shame",
           "artist": "Musical Circle",
           "artwork": null
         },
         {
           "id": 3,
-          "file": "10 - Garden Seals/03 - Releasing Prayer.mp3",
+          "file": "11 - Garden Seals/03 - Releasing Prayer.mp3",
           "title": "03 - Releasing Prayer",
           "artist": "Musical Circle",
           "artwork": null
         },
         {
           "id": 4,
-          "file": "10 - Garden Seals/04 - Piano Hands.mp3",
+          "file": "11 - Garden Seals/04 - Piano Hands.mp3",
           "title": "04 - Piano Hands",
           "artist": "Musical Circle",
           "artwork": null
         },
         {
           "id": 5,
-          "file": "10 - Garden Seals/05 - Matter Becoming.mp3",
+          "file": "11 - Garden Seals/05 - Matter Becoming.mp3",
           "title": "05 - Matter Becoming",
           "artist": "Musical Circle",
           "artwork": null
         },
         {
           "id": 6,
-          "file": "10 - Garden Seals/06 - The One who Comes.mp3",
+          "file": "11 - Garden Seals/06 - The One who Comes.mp3",
           "title": "06 - The One who Comes",
           "artist": "Musical Circle",
           "artwork": null
         },
         {
           "id": 7,
-          "file": "10 - Garden Seals/07 - The One Who Comes_unfinished.mp3",
+          "file": "11 - Garden Seals/07 - The One Who Comes_unfinished.mp3",
           "title": "07 - The One Who Comes_unfinished",
           "artist": "Musical Circle",
           "artwork": null
         },
         {
           "id": 8,
-          "file": "10 - Garden Seals/08 - What do you believe_.mp3",
+          "file": "11 - Garden Seals/08 - What do you believe_.mp3",
           "title": "08 - What do you believe_",
           "artist": "Musical Circle",
           "artwork": null
         },
         {
           "id": 9,
-          "file": "10 - Garden Seals/09 - The Fire Eater.mp3",
+          "file": "11 - Garden Seals/09 - The Fire Eater.mp3",
           "title": "09 - The Fire Eater",
           "artist": "Musical Circle",
           "artwork": null
         },
         {
           "id": 10,
-          "file": "10 - Garden Seals/10 - Grey Field.mp3",
+          "file": "11 - Garden Seals/10 - Grey Field.mp3",
           "title": "10 - Grey Field",
           "artist": "Musical Circle",
           "artwork": null
@@ -1013,11 +1069,11 @@
       "songCount": 10
     },
     {
-      "id": 11,
-      "path": "11 - Sacred Heart",
-      "name": "11 - Sacred Heart",
+      "id": 12,
+      "path": "12 - Sacred Heart",
+      "name": "12 - Sacred Heart",
       "album": {
-        "title": "11 - Sacred Heart",
+        "title": "12 - Sacred Heart",
         "artist": "",
         "description": "",
         "cover": null,
@@ -1032,14 +1088,14 @@
       "songs": [
         {
           "id": 1,
-          "file": "11 - Sacred Heart/01 - Dayenu.mp3",
+          "file": "12 - Sacred Heart/01 - Dayenu.mp3",
           "title": "01 - Dayenu",
           "artist": "",
           "artwork": null
         },
         {
           "id": 2,
-          "file": "11 - Sacred Heart/02 - Pigs and Pearls.mp3",
+          "file": "12 - Sacred Heart/02 - Pigs and Pearls.mp3",
           "title": "02 - Pigs and Pearls",
           "artist": "",
           "artwork": null

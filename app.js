@@ -59,7 +59,14 @@
     audioContext: null,
     analyser: null,
     sourceNode: null,
-    frequencyData: null
+    frequencyData: null,
+    visualizerMetrics: {
+      bass: 0,
+      mids: 0,
+      treble: 0,
+      energy: 0,
+      beat: 0
+    }
   };
 
   function naturalCompare(a, b) {
@@ -541,7 +548,7 @@
       "radial-bars": "Psychedelic spectrum",
       "wave-ring": "Wave ring",
       constellation: "Constellation"
-    }[style] || "Radial bars";
+    }[style] || "Psychedelic spectrum";
   }
 
   function updateAlbumPresentation(folder) {
@@ -717,23 +724,69 @@
 
   function analyserValues(time) {
     const length = state.frequencyData?.length || 256;
+    let values;
     if (state.analyser && state.frequencyData && !audio.paused) {
       state.analyser.getByteFrequencyData(state.frequencyData);
-      return state.frequencyData;
+      values = state.frequencyData;
+    } else {
+      values = new Uint8Array(length);
+      for (let index = 0; index < length; index += 1) {
+        values[index] = 18 + Math.round(10 * (1 + Math.sin(time * 0.0012 + index * 0.19)));
+      }
     }
 
-    const idle = new Uint8Array(length);
-    for (let index = 0; index < length; index += 1) {
-      idle[index] = 18 + Math.round(10 * (1 + Math.sin(time * 0.0012 + index * 0.19)));
-    }
-    return idle;
+    const averageRange = (start, end) => {
+      let total = 0;
+      const limit = Math.min(end, values.length);
+      for (let index = start; index < limit; index += 1) total += values[index];
+      return limit > start ? total / ((limit - start) * 255) : 0;
+    };
+    const previous = state.visualizerMetrics;
+    const bass = averageRange(1, Math.floor(values.length * 0.08));
+    const mids = averageRange(Math.floor(values.length * 0.08), Math.floor(values.length * 0.38));
+    const treble = averageRange(Math.floor(values.length * 0.38), Math.floor(values.length * 0.8));
+    const energy = Math.min(1, bass * 0.48 + mids * 0.34 + treble * 0.18);
+    const beat = Math.max(0, Math.min(1, bass - previous.bass * 1.035));
+    state.visualizerMetrics = {
+      bass: previous.bass * 0.72 + bass * 0.28,
+      mids: previous.mids * 0.78 + mids * 0.22,
+      treble: previous.treble * 0.8 + treble * 0.2,
+      energy: previous.energy * 0.7 + energy * 0.3,
+      beat: previous.beat * 0.62 + beat * 0.38
+    };
+    return values;
+  }
+
+  function drawVisualizerAtmosphere(ctx, cx, cy, size, time) {
+    const { bass, mids, treble, beat } = state.visualizerMetrics;
+    const accent = getComputedStyle(document.documentElement).getPropertyValue("--accent").trim();
+    const secondary = getComputedStyle(document.documentElement).getPropertyValue("--accent-secondary").trim();
+    const pulse = 1 + beat * 0.16 + bass * 0.04;
+
+    ctx.save();
+    ctx.globalCompositeOperation = "screen";
+    ctx.globalAlpha = 0.08 + bass * 0.16;
+    ctx.strokeStyle = accent;
+    ctx.lineWidth = Math.max(1, size * 0.003);
+    ctx.beginPath();
+    ctx.arc(cx, cy, size * 0.3 * pulse, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.globalAlpha = 0.06 + treble * 0.12;
+    ctx.strokeStyle = secondary;
+    ctx.beginPath();
+    ctx.arc(cx, cy, size * (0.36 + mids * 0.05) * (2 - pulse), 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+
+    return time;
   }
 
   function drawRadialBars(ctx, values, cx, cy, size, time) {
+    const { bass, mids, treble, beat } = state.visualizerMetrics;
     const bars = 72;
-    const baseRadius = size * 0.18;
-    const maximumLength = size * 0.2 * state.album.visualizerIntensity;
-    const phase = time * 0.00018;
+    const baseRadius = size * (0.18 + bass * 0.025);
+    const maximumLength = size * (0.2 + mids * 0.08) * state.album.visualizerIntensity;
+    const phase = time * (0.00018 + treble * 0.00015);
     const outerRadius = baseRadius + maximumLength;
     const accent = getComputedStyle(document.documentElement).getPropertyValue("--accent").trim();
     const secondary = getComputedStyle(document.documentElement).getPropertyValue("--accent-secondary").trim();
@@ -761,7 +814,7 @@
 
       const average = samples > 0 ? total / samples / 255 : 0;
       const idleMovement = audio.paused ? 0.06 * (1 + Math.sin(time * 0.0014 + index * 0.3)) : 0;
-      const value = Math.min(1, Math.pow(average, 0.72) + idleMovement);
+      const value = Math.min(1, Math.pow(average, 0.72) + idleMovement + beat * 0.16);
       const angle = -Math.PI / 2 + (Math.PI * 2 * index) / bars + phase;
       const mirroredAngle = -Math.PI / 2 - (Math.PI * 2 * index) / bars - phase;
       const length = size * 0.025 + value * maximumLength;
@@ -800,40 +853,49 @@
   }
 
   function drawWaveRing(ctx, values, cx, cy, size, time) {
+    const { bass, mids, treble, beat } = state.visualizerMetrics;
     const points = 128;
-    const baseRadius = size * 0.23;
-    const amplitude = size * 0.09 * state.album.visualizerIntensity;
-    ctx.lineWidth = Math.max(1.5, size * 0.004);
-    ctx.globalAlpha = 0.82;
-    ctx.beginPath();
+    const baseRadius = size * (0.2 + bass * 0.04);
+    const amplitude = size * (0.08 + mids * 0.08) * state.album.visualizerIntensity;
+    const rings = 3;
+    for (let ring = 0; ring < rings; ring += 1) {
+      const ringPhase = time * (0.0002 + treble * 0.00018) * (ring % 2 ? -1 : 1);
+      const ringRadius = baseRadius + ring * size * 0.055 + beat * size * 0.025;
+      ctx.lineWidth = Math.max(1.2, size * (0.002 + (rings - ring) * 0.001));
+      ctx.globalAlpha = 0.28 + (rings - ring) * 0.16 + beat * 0.22;
+      ctx.beginPath();
 
-    for (let index = 0; index <= points; index += 1) {
-      const wrapped = index % points;
-      const angle = -Math.PI / 2 + (Math.PI * 2 * wrapped) / points;
-      const value = values[Math.floor((wrapped / points) * values.length * 0.72)] / 255;
-      const idleMovement = audio.paused ? 0.035 * Math.sin(time * 0.0018 + wrapped * 0.12) : 0;
-      const radius = baseRadius + (value + idleMovement) * amplitude;
-      const x = cx + Math.cos(angle) * radius;
-      const y = cy + Math.sin(angle) * radius;
-      if (index === 0) ctx.moveTo(x, y);
-      else ctx.lineTo(x, y);
+      for (let index = 0; index <= points; index += 1) {
+        const wrapped = index % points;
+        const angle = -Math.PI / 2 + (Math.PI * 2 * wrapped) / points + ringPhase;
+        const bin = Math.floor((wrapped / points) * values.length * 0.72);
+        const value = values[bin] / 255;
+        const harmonic = values[Math.min(values.length - 1, bin * 2 + 2)] / 255;
+        const idleMovement = audio.paused ? 0.035 * Math.sin(time * 0.0018 + wrapped * 0.12) : 0;
+        const radius = ringRadius + (value * 0.8 + harmonic * 0.2 + idleMovement) * amplitude;
+        const x = cx + Math.cos(angle) * radius;
+        const y = cy + Math.sin(angle) * radius;
+        if (index === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+
+      ctx.closePath();
+      ctx.stroke();
     }
-
-    ctx.closePath();
-    ctx.stroke();
   }
 
   function drawConstellation(ctx, values, cx, cy, size, time) {
+    const { bass, mids, treble, beat } = state.visualizerMetrics;
     const points = 42;
-    const baseRadius = size * 0.255;
-    const spread = size * 0.085 * state.album.visualizerIntensity;
+    const baseRadius = size * (0.23 + bass * 0.035);
+    const spread = size * (0.085 + mids * 0.07) * state.album.visualizerIntensity;
     const positions = [];
 
     for (let index = 0; index < points; index += 1) {
       const angle = -Math.PI / 2 + (Math.PI * 2 * index) / points;
       const value = values[Math.floor((index / points) * values.length * 0.76)] / 255;
-      const drift = Math.sin(time * 0.0007 + index * 1.7) * size * 0.008;
-      const radius = baseRadius + value * spread + drift;
+      const drift = Math.sin(time * (0.0007 + treble * 0.0008) + index * 1.7) * size * 0.008;
+      const radius = baseRadius + value * spread + drift + beat * size * 0.04;
       positions.push({
         x: cx + Math.cos(angle) * radius,
         y: cy + Math.sin(angle) * radius,
@@ -841,21 +903,30 @@
       });
     }
 
-    ctx.lineWidth = 1;
+    ctx.lineWidth = Math.max(1, size * 0.0018);
     for (let index = 0; index < positions.length; index += 1) {
       const current = positions[index];
       const next = positions[(index + 1) % positions.length];
-      ctx.globalAlpha = 0.12 + Math.max(current.value, next.value) * 0.3;
+      ctx.globalAlpha = 0.12 + Math.max(current.value, next.value) * 0.3 + beat * 0.18;
       ctx.beginPath();
       ctx.moveTo(current.x, current.y);
       ctx.lineTo(next.x, next.y);
       ctx.stroke();
+
+      if (index % 3 === 0) {
+        const opposite = positions[(index + Math.floor(points / 2)) % positions.length];
+        ctx.globalAlpha = 0.05 + treble * 0.18;
+        ctx.beginPath();
+        ctx.moveTo(current.x, current.y);
+        ctx.lineTo(opposite.x, opposite.y);
+        ctx.stroke();
+      }
     }
 
     positions.forEach((point) => {
       ctx.globalAlpha = 0.45 + point.value * 0.55;
       ctx.beginPath();
-      ctx.arc(point.x, point.y, 1.4 + point.value * 3.2, 0, Math.PI * 2);
+      ctx.arc(point.x, point.y, 1.4 + point.value * 3.2 + beat * 2.5, 0, Math.PI * 2);
       ctx.fill();
     });
   }
@@ -864,14 +935,23 @@
     const width = state.visualizerWidth;
     const height = state.visualizerHeight;
     if (width > 0 && height > 0) {
-      visualizerContext.clearRect(0, 0, width, height);
       const cx = width / 2;
       const cy = height / 2;
       const size = Math.min(width, height);
       const accent = getComputedStyle(document.documentElement).getPropertyValue("--accent").trim();
+      const { beat, energy, treble } = state.visualizerMetrics;
+      visualizerContext.save();
+      visualizerContext.globalCompositeOperation = "source-over";
+      visualizerContext.fillStyle = `rgba(7, 10, 18, ${audio.paused ? 0.2 : 0.105})`;
+      visualizerContext.fillRect(0, 0, width, height);
+      visualizerContext.translate(cx, cy);
+      visualizerContext.rotate((time * 0.000025 * (0.6 + treble)) + beat * 0.012);
+      visualizerContext.scale(1 + beat * 0.025 + energy * 0.006, 1 + beat * 0.025 + energy * 0.006);
+      visualizerContext.translate(-cx, -cy);
       visualizerContext.strokeStyle = accent;
       visualizerContext.fillStyle = accent;
       const values = analyserValues(time);
+      drawVisualizerAtmosphere(visualizerContext, cx, cy, size, time);
 
       if (state.album.visualizer === "wave-ring") {
         drawWaveRing(visualizerContext, values, cx, cy, size, time);
@@ -881,6 +961,7 @@
         drawRadialBars(visualizerContext, values, cx, cy, size, time);
       }
       visualizerContext.globalAlpha = 1;
+      visualizerContext.restore();
     }
 
     requestAnimationFrame(drawVisualizer);

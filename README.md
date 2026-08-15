@@ -158,9 +158,11 @@ The visualizer uses the browser's Web Audio API and responds to the real frequen
 
 Available patterns:
 
-- `radial-bars`: frequency bars radiate outward from the centre artwork;
-- `wave-ring`: a continuous circular waveform expands with the music;
-- `constellation`: reactive points orbit the artwork and form connecting lines.
+- `radial-bars`: a glowing, mirrored spectrum with grouped frequency bands, beat pulses, and trails;
+- `wave-ring`: layered harmonic rings that ripple, rotate, and expand with the music;
+- `constellation`: reactive particles, orbiting points, and cross-linked geometry that respond to the spectrum.
+
+All patterns share bass, midrange, treble, energy, and beat analysis. The canvas also keeps a fading previous frame, creating the evolving trails and motion associated with classic Winamp visualizations.
 
 Before playback begins, each pattern has a subtle idle animation. When playback starts, the visualization switches to measured audio frequencies.
 

@@ -1,0 +1,9 @@
+{
+  "defaultPreset": "perfect-fifth",
+  "presets": {
+    "default": { "ratioX": 3, "ratioY": 2, "trailCount": 3, "phaseSpeed": 0.0004, "scale": 0.34, "lineWidth": 1.8 },
+    "perfect-fifth": { "ratioX": 3, "ratioY": 2, "trailCount": 5, "phaseSpeed": 0.00055, "scale": 0.36, "lineWidth": 1.5 },
+    "major-third": { "ratioX": 5, "ratioY": 4, "trailCount": 4, "phaseSpeed": -0.00035, "scale": 0.33, "lineWidth": 1.3 },
+    "octave": { "ratioX": 2, "ratioY": 1, "trailCount": 7, "phaseSpeed": 0.00025, "scale": 0.38, "lineWidth": 1.1 }
+  }
+}

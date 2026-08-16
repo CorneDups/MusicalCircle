@@ -11,9 +11,19 @@ It now supports:
 - song-specific artwork stored beside an MP3 or inside an `artwork` subfolder;
 - embedded ID3/APIC artwork read directly from an MP3 in the browser;
 - an audio-reactive Web Audio visualizer;
-- three visualizer patterns: radial bars, wave ring, and constellation;
+- five music-theory visualizers with editable JSON tuning presets;
 - unchanged play, pause, previous, next, progress, volume, and autoplay controls;
 - automatic generation and GitHub Pages deployment.
+
+## Run locally
+
+Install [Node.js](https://nodejs.org/), open a terminal in the project folder, and run:
+
+```bash
+npm run preview
+```
+
+Then open the URL printed in the terminal, normally [http://localhost:8000](http://localhost:8000). If that port is already occupied, the server automatically selects the next available port. Press `Ctrl+C` in the terminal to stop the local server.
 
 ## 1. Basic folder structure
 
@@ -104,7 +114,8 @@ Every album folder may include an optional `album.json` file:
   "background": "background.jpg",
   "accent": "#e6ae68",
   "accentSecondary": "#75b8d3",
-  "visualizer": "wave-ring",
+  "visualizer": "circle-of-fifths",
+  "visualizerPreset": "mandala",
   "visualizerIntensity": 1.15,
   "artworkMotion": "pulse",
   "preferEmbeddedArtwork": true,
@@ -132,7 +143,8 @@ Every album folder may include an optional `album.json` file:
 | `background` | Full-page background path | Image filename/path |
 | `accent` | Main interface and visualizer color | CSS color |
 | `accentSecondary` | Secondary generated-artwork color | CSS color |
-| `visualizer` | Audio-reactive pattern | `radial-bars`, `wave-ring`, `constellation` |
+| `visualizer` | Audio-reactive pattern | `circle-of-fifths`, `lissajous`, `tonnetz`, `polyrhythm`, `spectral-terrain` |
+| `visualizerPreset` | Named variation from the visualizer's tuning file | Preset name, or `default` |
 | `visualizerIntensity` | Visual response size | Number from `0.5` to `2` |
 | `artworkMotion` | Centre artwork movement while playing | `still`, `pulse`, `rotate` |
 | `preferEmbeddedArtwork` | Read artwork embedded inside MP3 files | `true` or `false` |
@@ -158,9 +170,13 @@ The visualizer uses the browser's Web Audio API and responds to the real frequen
 
 Available patterns:
 
-- `radial-bars`: a glowing, mirrored spectrum with grouped frequency bands, beat pulses, and trails;
-- `wave-ring`: layered harmonic rings that ripple, rotate, and expand with the music;
-- `constellation`: reactive particles, orbiting points, and cross-linked geometry that respond to the spectrum.
+- `circle-of-fifths`: pitch classes ordered by fifths become a rotating harmonic polygon;
+- `lissajous`: interval ratios such as 3:2 and 5:4 become stable, layered curves;
+- `tonnetz`: pitch-class energy illuminates a triangular harmonic lattice;
+- `polyrhythm`: concentric meter wheels show Euclidean pulses and cycle alignment;
+- `spectral-terrain`: frequency snapshots accumulate into a perspective sound landscape.
+
+Each engine reads named presets from its matching file in `visualizers/`. Edit those JSON values to tune geometry, density, motion, and response, or add another object under `presets` and select it with `visualizerPreset` in an album's `album.json`. The `defaultPreset` field controls the fallback variation for that engine.
 
 All patterns share bass, midrange, treble, energy, and beat analysis. The canvas also keeps a fading previous frame, creating the evolving trails and motion associated with classic Winamp visualizations.
 

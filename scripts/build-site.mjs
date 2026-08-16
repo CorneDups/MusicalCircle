@@ -1,4 +1,4 @@
-import { copyFile, mkdir, readdir, rm, stat, writeFile } from "node:fs/promises";
+import { copyFile, cp, mkdir, readdir, rm, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
@@ -24,6 +24,10 @@ const filesToCopy = ["index.html", "styles.css", "app.js", "songs.js", "songs.js
 for (const file of filesToCopy) {
   await copyFile(path.join(projectRoot, file), path.join(outputDirectory, file));
 }
+
+await cp(path.join(projectRoot, "visualizers"), path.join(outputDirectory, "visualizers"), {
+  recursive: true
+});
 
 await mkdir(path.join(outputDirectory, "music"), { recursive: true });
 const sourceMusic = path.join(projectRoot, "music");

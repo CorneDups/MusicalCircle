@@ -4,9 +4,10 @@
   "description": "An elemental journey of creation, motion, and atomic force.",
   "accent": "#0f766e",
   "accentSecondary": "#f59e0b",
-  "visualizer": "radial-bars",
+  "visualizer": "tonnetz",
+  "visualizerPreset": "harmonic-web",
   "visualizerIntensity": 1.35,
-  "artworkMotion": "rotate",
-  "preferEmbeddedArtwork": true,
-  "Cover": "my-album-art.jpg"
+  "artworkMotion": "pulse",
+  "preferEmbeddedArtwork": false,
+  "cover": "my-album-art.jpg"
 }

@@ -1,0 +1,9 @@
+{
+  "defaultPreset": "mountain-range",
+  "presets": {
+    "default": { "ridges": 24, "bins": 42, "depth": 0.015, "height": 0.2, "sampleEvery": 3, "fillAlpha": 0.055 },
+    "mountain-range": { "ridges": 32, "bins": 54, "depth": 0.012, "height": 0.23, "sampleEvery": 2, "fillAlpha": 0.045 },
+    "topographic": { "ridges": 18, "bins": 64, "depth": 0.021, "height": 0.16, "sampleEvery": 4, "fillAlpha": 0.08 },
+    "deep-field": { "ridges": 42, "bins": 36, "depth": 0.009, "height": 0.27, "sampleEvery": 2, "fillAlpha": 0.035 }
+  }
+}

@@ -9,7 +9,13 @@ const jsonOutput = path.join(projectRoot, "songs.json");
 const jsOutput = path.join(projectRoot, "songs.js");
 
 const IMAGE_EXTENSIONS = [".jpg", ".jpeg", ".png", ".webp", ".gif", ".avif", ".svg"];
-const VISUALIZER_STYLES = new Set(["radial-bars", "wave-ring", "constellation"]);
+const VISUALIZER_STYLES = new Set([
+  "circle-of-fifths",
+  "lissajous",
+  "tonnetz",
+  "polyrhythm",
+  "spectral-terrain"
+]);
 const ARTWORK_MOTIONS = new Set(["still", "pulse", "rotate"]);
 
 function titleFromFilename(filename) {
@@ -195,7 +201,8 @@ async function scanFolder(absoluteDirectory, relativeDirectory = "") {
         accentSecondary: cleanString(config.accentSecondary),
         visualizer: VISUALIZER_STYLES.has(config.visualizer)
           ? config.visualizer
-          : "radial-bars",
+          : "circle-of-fifths",
+        visualizerPreset: cleanString(config.visualizerPreset, "default"),
         visualizerIntensity: clamp(config.visualizerIntensity, 0.5, 2, 1),
         artworkMotion: ARTWORK_MOTIONS.has(config.artworkMotion)
           ? config.artworkMotion

@@ -1,7 +1,7 @@
 // Automatically generated. Do not edit by hand.
 window.SONGS = {
   "version": 3,
-  "generatedAt": "2026-08-16T13:48:34.945Z",
+  "generatedAt": "2026-08-16T16:36:35.575Z",
   "folderCount": 12,
   "totalSongs": 121,
   "folders": [
@@ -17,7 +17,8 @@ window.SONGS = {
         "background": null,
         "accent": "#5b2e91",
         "accentSecondary": "#9d7cf5",
-        "visualizer": "constellation",
+        "visualizer": "circle-of-fifths",
+        "visualizerPreset": "mandala",
         "visualizerIntensity": 1.12,
         "artworkMotion": "rotate",
         "preferEmbeddedArtwork": true
@@ -220,7 +221,8 @@ window.SONGS = {
         "background": null,
         "accent": "#c2410c",
         "accentSecondary": "#2dd4bf",
-        "visualizer": "wave-ring",
+        "visualizer": "lissajous",
+        "visualizerPreset": "octave",
         "visualizerIntensity": 1.24,
         "artworkMotion": "pulse",
         "preferEmbeddedArtwork": true
@@ -286,104 +288,105 @@ window.SONGS = {
         "title": "Elements",
         "artist": "Musical Circle",
         "description": "An elemental journey of creation, motion, and atomic force.",
-        "cover": null,
+        "cover": "03 - Elements/my-album-art.jpg",
         "background": null,
         "accent": "#0f766e",
         "accentSecondary": "#f59e0b",
-        "visualizer": "radial-bars",
+        "visualizer": "tonnetz",
+        "visualizerPreset": "harmonic-web",
         "visualizerIntensity": 1.35,
-        "artworkMotion": "rotate",
-        "preferEmbeddedArtwork": true
+        "artworkMotion": "pulse",
+        "preferEmbeddedArtwork": false
       },
       "songs": [
         {
           "id": 1,
-          "file": "03 - Elements/01 - First Breath.mp3",
-          "title": "01 - First Breath",
+          "file": "03 - Elements/00A - First Breath.mp3",
+          "title": "00A - First Breath",
           "artist": "Musical Circle",
           "artwork": null
         },
         {
           "id": 2,
-          "file": "03 - Elements/02 - Creation.mp3",
-          "title": "02 - Creation",
+          "file": "03 - Elements/00B - Creation.mp3",
+          "title": "00B - Creation",
           "artist": "Musical Circle",
           "artwork": null
         },
         {
           "id": 3,
-          "file": "03 - Elements/03 - Hydrogen.mp3",
-          "title": "03 - Hydrogen",
+          "file": "03 - Elements/01 - Hydrogen.mp3",
+          "title": "01 - Hydrogen",
           "artist": "Musical Circle",
           "artwork": null
         },
         {
           "id": 4,
-          "file": "03 - Elements/04 - Helium.mp3",
-          "title": "04 - Helium",
+          "file": "03 - Elements/02 - Helium.mp3",
+          "title": "02 - Helium",
           "artist": "Musical Circle",
           "artwork": null
         },
         {
           "id": 5,
-          "file": "03 - Elements/05 - Lithium.mp3",
-          "title": "05 - Lithium",
+          "file": "03 - Elements/03 - Lithium.mp3",
+          "title": "03 - Lithium",
           "artist": "Musical Circle",
           "artwork": null
         },
         {
           "id": 6,
-          "file": "03 - Elements/06 - Beryllium.mp3",
-          "title": "06 - Beryllium",
+          "file": "03 - Elements/04 - Beryllium.mp3",
+          "title": "04 - Beryllium",
           "artist": "Musical Circle",
           "artwork": null
         },
         {
           "id": 7,
-          "file": "03 - Elements/07 - Boron.mp3",
-          "title": "07 - Boron",
+          "file": "03 - Elements/05 - Boron.mp3",
+          "title": "05 - Boron",
           "artist": "Musical Circle",
           "artwork": null
         },
         {
           "id": 8,
-          "file": "03 - Elements/08 - Carbon.mp3",
-          "title": "08 - Carbon",
+          "file": "03 - Elements/06 - Carbon.mp3",
+          "title": "06 - Carbon",
           "artist": "Musical Circle",
           "artwork": null
         },
         {
           "id": 9,
-          "file": "03 - Elements/09 - Nitrogen.mp3",
-          "title": "09 - Nitrogen",
+          "file": "03 - Elements/07 - Nitrogen.mp3",
+          "title": "07 - Nitrogen",
           "artist": "Musical Circle",
           "artwork": null
         },
         {
           "id": 10,
-          "file": "03 - Elements/10 - Oxygen.mp3",
-          "title": "10 - Oxygen",
+          "file": "03 - Elements/08 - Oxygen.mp3",
+          "title": "08 - Oxygen",
           "artist": "Musical Circle",
           "artwork": null
         },
         {
           "id": 11,
-          "file": "03 - Elements/11 - Fluorine.mp3",
-          "title": "11 - Fluorine",
+          "file": "03 - Elements/09 - Fluorine.mp3",
+          "title": "09 - Fluorine",
           "artist": "Musical Circle",
           "artwork": null
         },
         {
           "id": 12,
-          "file": "03 - Elements/12 - Neon.mp3",
-          "title": "12 - Neon",
+          "file": "03 - Elements/10- Neon.mp3",
+          "title": "10- Neon",
           "artist": "Musical Circle",
           "artwork": null
         },
         {
           "id": 13,
-          "file": "03 - Elements/13 - Origins.mp3",
-          "title": "13 - Origins",
+          "file": "03 - Elements/100 - Origins.mp3",
+          "title": "100 - Origins",
           "artist": "Musical Circle",
           "artwork": null
         }
@@ -402,7 +405,8 @@ window.SONGS = {
         "background": null,
         "accent": "#be185d",
         "accentSecondary": "#f472b6",
-        "visualizer": "constellation",
+        "visualizer": "polyrhythm",
+        "visualizerPreset": "three-four-five",
         "visualizerIntensity": 1.08,
         "artworkMotion": "pulse",
         "preferEmbeddedArtwork": true
@@ -507,7 +511,8 @@ window.SONGS = {
         "background": null,
         "accent": "#0f766e",
         "accentSecondary": "#8b5cf6",
-        "visualizer": "wave-ring",
+        "visualizer": "spectral-terrain",
+        "visualizerPreset": "mountain-range",
         "visualizerIntensity": 1,
         "artworkMotion": "still",
         "preferEmbeddedArtwork": true
@@ -633,7 +638,8 @@ window.SONGS = {
         "background": null,
         "accent": "",
         "accentSecondary": "",
-        "visualizer": "radial-bars",
+        "visualizer": "circle-of-fifths",
+        "visualizerPreset": "default",
         "visualizerIntensity": 1,
         "artworkMotion": "pulse",
         "preferEmbeddedArtwork": true
@@ -689,7 +695,8 @@ window.SONGS = {
         "background": null,
         "accent": "#2563eb",
         "accentSecondary": "#fbbf24",
-        "visualizer": "wave-ring",
+        "visualizer": "circle-of-fifths",
+        "visualizerPreset": "minimal",
         "visualizerIntensity": 0.9,
         "artworkMotion": "pulse",
         "preferEmbeddedArtwork": true
@@ -766,7 +773,8 @@ window.SONGS = {
         "background": null,
         "accent": "#7c2d12",
         "accentSecondary": "#fb923c",
-        "visualizer": "radial-bars",
+        "visualizer": "lissajous",
+        "visualizerPreset": "major-third",
         "visualizerIntensity": 1.18,
         "artworkMotion": "still",
         "preferEmbeddedArtwork": true
@@ -822,7 +830,8 @@ window.SONGS = {
         "background": null,
         "accent": "#1d4ed8",
         "accentSecondary": "#60a5fa",
-        "visualizer": "wave-ring",
+        "visualizer": "tonnetz",
+        "visualizerPreset": "constellation",
         "visualizerIntensity": 0.86,
         "artworkMotion": "still",
         "preferEmbeddedArtwork": true
@@ -913,7 +922,8 @@ window.SONGS = {
         "background": null,
         "accent": "#7e22ce",
         "accentSecondary": "#facc15",
-        "visualizer": "radial-bars",
+        "visualizer": "polyrhythm",
+        "visualizerPreset": "euclidean",
         "visualizerIntensity": 1.28,
         "artworkMotion": "rotate",
         "preferEmbeddedArtwork": true
@@ -990,7 +1000,8 @@ window.SONGS = {
         "background": null,
         "accent": "#166534",
         "accentSecondary": "#86efac",
-        "visualizer": "constellation",
+        "visualizer": "spectral-terrain",
+        "visualizerPreset": "deep-field",
         "visualizerIntensity": 1.04,
         "artworkMotion": "pulse",
         "preferEmbeddedArtwork": true
@@ -1081,7 +1092,8 @@ window.SONGS = {
         "background": null,
         "accent": "",
         "accentSecondary": "",
-        "visualizer": "radial-bars",
+        "visualizer": "circle-of-fifths",
+        "visualizerPreset": "default",
         "visualizerIntensity": 1,
         "artworkMotion": "pulse",
         "preferEmbeddedArtwork": true

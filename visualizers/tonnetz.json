@@ -1,0 +1,8 @@
+{
+  "defaultPreset": "harmonic-web",
+  "presets": {
+    "default": { "columns": 9, "rows": 9, "spacing": 0.09, "driftSpeed": 0.00005, "nodeSize": 2.8, "activeThreshold": 0.25 },
+    "harmonic-web": { "columns": 11, "rows": 11, "spacing": 0.075, "driftSpeed": -0.00004, "nodeSize": 2.4, "activeThreshold": 0.18 },
+    "constellation": { "columns": 7, "rows": 7, "spacing": 0.115, "driftSpeed": 0.00008, "nodeSize": 4, "activeThreshold": 0.32 }
+  }
+}

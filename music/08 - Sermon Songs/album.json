@@ -4,7 +4,8 @@
   "description": "A spoken and sung cadence of wisdom, memory, and communal depth.",
   "accent": "#7c2d12",
   "accentSecondary": "#fb923c",
-  "visualizer": "radial-bars",
+  "visualizer": "lissajous",
+  "visualizerPreset": "major-third",
   "visualizerIntensity": 1.18,
   "artworkMotion": "still",
   "preferEmbeddedArtwork": true

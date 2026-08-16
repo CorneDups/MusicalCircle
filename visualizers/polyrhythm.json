@@ -1,0 +1,9 @@
+{
+  "defaultPreset": "three-four-five",
+  "presets": {
+    "default": { "meters": [3, 4], "pulses": [2, 3], "speed": 0.00035, "radiusStep": 0.07, "nodeSize": 3.5 },
+    "three-four-five": { "meters": [3, 4, 5], "pulses": [2, 3, 4], "speed": 0.00028, "radiusStep": 0.062, "nodeSize": 3.2 },
+    "euclidean": { "meters": [5, 7, 8], "pulses": [2, 3, 5], "speed": -0.00022, "radiusStep": 0.058, "nodeSize": 2.7 },
+    "clockwork": { "meters": [4, 6, 12], "pulses": [3, 5, 7], "speed": 0.00042, "radiusStep": 0.055, "nodeSize": 2.4 }
+  }
+}

@@ -4,7 +4,8 @@
   "description": "A meditative and devotional pattern, like prayer carried in steady light.",
   "accent": "#1d4ed8",
   "accentSecondary": "#60a5fa",
-  "visualizer": "wave-ring",
+  "visualizer": "tonnetz",
+  "visualizerPreset": "constellation",
   "visualizerIntensity": 0.86,
   "artworkMotion": "still",
   "preferEmbeddedArtwork": true

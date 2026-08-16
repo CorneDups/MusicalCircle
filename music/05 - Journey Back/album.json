@@ -4,7 +4,8 @@
   "description": "A reflective return, softened by sea-glass colors and steady waves.",
   "accent": "#0f766e",
   "accentSecondary": "#8b5cf6",
-  "visualizer": "wave-ring",
+  "visualizer": "spectral-terrain",
+  "visualizerPreset": "mountain-range",
   "visualizerIntensity": 1.0,
   "artworkMotion": "still",
   "preferEmbeddedArtwork": true

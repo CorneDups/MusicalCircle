@@ -4,7 +4,8 @@
   "description": "Tender and unresolved love, lit by rose-colored sparks and drifting orbitals.",
   "accent": "#be185d",
   "accentSecondary": "#f472b6",
-  "visualizer": "constellation",
+  "visualizer": "polyrhythm",
+  "visualizerPreset": "three-four-five",
   "visualizerIntensity": 1.08,
   "artworkMotion": "pulse",
   "preferEmbeddedArtwork": true

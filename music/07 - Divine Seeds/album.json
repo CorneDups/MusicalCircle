@@ -4,7 +4,8 @@
   "description": "A gentle, sacred bloom of trust, joy, and luminous stillness.",
   "accent": "#2563eb",
   "accentSecondary": "#fbbf24",
-  "visualizer": "wave-ring",
+  "visualizer": "circle-of-fifths",
+  "visualizerPreset": "minimal",
   "visualizerIntensity": 0.9,
   "artworkMotion": "pulse",
   "preferEmbeddedArtwork": true

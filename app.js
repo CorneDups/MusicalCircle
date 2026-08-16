@@ -9,6 +9,8 @@
   const albumTitle = document.querySelector("#albumTitle");
   const albumArtist = document.querySelector("#albumArtist");
   const albumDescription = document.querySelector("#albumDescription");
+  const albumCoverImage = document.querySelector("#albumCoverImage");
+  const albumCoverFallback = document.querySelector("#albumCoverFallback");
   const visualStyleBadge = document.querySelector("#visualStyleBadge");
   const albumBackdrop = document.querySelector("#albumBackdrop");
   const centrePlayer = document.querySelector("#centrePlayer");
@@ -28,6 +30,13 @@
   const statusMessage = document.querySelector("#statusMessage");
   const visualizerCanvas = document.querySelector("#visualizerCanvas");
   const visualizerContext = visualizerCanvas.getContext("2d");
+  const VISUALIZER_IDS = [
+    "circle-of-fifths",
+    "lissajous",
+    "tonnetz",
+    "polyrhythm",
+    "spectral-terrain"
+  ];
 
   const DEFAULT_ALBUM = {
     title: "Music",
@@ -37,7 +46,8 @@
     background: null,
     accent: "",
     accentSecondary: "",
-    visualizer: "radial-bars",
+    visualizer: "circle-of-fifths",
+    visualizerPreset: "default",
     visualizerIntensity: 1,
     artworkMotion: "pulse",
     preferEmbeddedArtwork: true
@@ -60,6 +70,9 @@
     analyser: null,
     sourceNode: null,
     frequencyData: null,
+    visualizerConfigs: {},
+    terrainHistory: [],
+    terrainFrame: 0,
     visualizerMetrics: {
       bass: 0,
       mids: 0,
@@ -89,9 +102,12 @@
       background: typeof input.background === "string" ? input.background.replaceAll("\\", "/") : null,
       accent: typeof input.accent === "string" ? input.accent.trim() : "",
       accentSecondary: typeof input.accentSecondary === "string" ? input.accentSecondary.trim() : "",
-      visualizer: ["radial-bars", "wave-ring", "constellation"].includes(input.visualizer)
+      visualizer: VISUALIZER_IDS.includes(input.visualizer)
         ? input.visualizer
-        : "radial-bars",
+        : "circle-of-fifths",
+      visualizerPreset: typeof input.visualizerPreset === "string" && input.visualizerPreset.trim()
+        ? input.visualizerPreset.trim()
+        : "default",
       visualizerIntensity: Number.isFinite(Number(input.visualizerIntensity))
         ? Math.min(Math.max(Number(input.visualizerIntensity), 0.5), 2)
         : 1,
@@ -222,6 +238,26 @@
     const url = musicAssetUrl(pathValue);
     albumBackdrop.style.backgroundImage = `url(${JSON.stringify(url)})`;
     albumBackdrop.classList.add("has-image");
+  }
+
+  function setAlbumCover(pathValue, title) {
+    albumCoverFallback.textContent = titleInitials(title);
+    if (!pathValue) {
+      albumCoverImage.hidden = true;
+      albumCoverImage.removeAttribute("src");
+      albumCoverImage.alt = "";
+      albumCoverFallback.hidden = false;
+      return;
+    }
+
+    albumCoverFallback.hidden = true;
+    albumCoverImage.hidden = false;
+    albumCoverImage.alt = `${title} album cover`;
+    albumCoverImage.src = musicAssetUrl(pathValue);
+    albumCoverImage.onerror = () => {
+      albumCoverImage.hidden = true;
+      albumCoverFallback.hidden = false;
+    };
   }
 
   function setArtwork(url, altText) {
@@ -545,19 +581,23 @@
 
   function visualizerName(style) {
     return {
-      "radial-bars": "Psychedelic spectrum",
-      "wave-ring": "Wave ring",
-      constellation: "Constellation"
-    }[style] || "Psychedelic spectrum";
+      "circle-of-fifths": "Circle of Fifths",
+      lissajous: "Harmonic Lissajous",
+      tonnetz: "Tonnetz lattice",
+      polyrhythm: "Polyrhythm wheels",
+      "spectral-terrain": "Spectral terrain"
+    }[style] || "Circle of Fifths";
   }
 
   function updateAlbumPresentation(folder) {
     state.album = folder.album;
+    state.terrainHistory = [];
     applyAlbumTheme(state.album);
     albumTitle.textContent = state.album.title;
     albumArtist.textContent = state.album.artist || "Independent collection";
     albumDescription.textContent = state.album.description || "Select a song to begin the visual experience.";
     visualStyleBadge.textContent = visualizerName(state.album.visualizer);
+    setAlbumCover(state.album.cover, state.album.title);
     setBackdrop(state.album.background || state.album.cover);
   }
 
@@ -931,6 +971,227 @@
     });
   }
 
+  function currentVisualizerPreset() {
+    const config = state.visualizerConfigs[state.album.visualizer] || {};
+    const presets = config.presets || {};
+    return presets[state.album.visualizerPreset]
+      || presets[config.defaultPreset]
+      || presets.default
+      || {};
+  }
+
+  function pitchClassEnergy(values) {
+    const chroma = new Array(12).fill(0);
+    const counts = new Array(12).fill(0);
+    const sampleRate = state.audioContext?.sampleRate || 44100;
+    const fftSize = state.analyser?.fftSize || values.length * 2;
+
+    for (let bin = 1; bin < values.length * 0.75; bin += 1) {
+      const frequency = (bin * sampleRate) / fftSize;
+      if (frequency < 55) continue;
+      const midi = Math.round(69 + 12 * Math.log2(frequency / 440));
+      const pitchClass = ((midi % 12) + 12) % 12;
+      chroma[pitchClass] += Math.pow(values[bin] / 255, 1.35);
+      counts[pitchClass] += 1;
+    }
+
+    return chroma.map((value, index) => counts[index] ? Math.min(1, value / counts[index] * 3.2) : 0);
+  }
+
+  function drawCircleOfFifths(ctx, values, cx, cy, size, time, preset) {
+    const labels = ["C", "G", "D", "A", "E", "B", "F♯", "D♭", "A♭", "E♭", "B♭", "F"];
+    const fifths = [0, 7, 2, 9, 4, 11, 6, 1, 8, 3, 10, 5];
+    const chroma = pitchClassEnergy(values);
+    const radius = size * (preset.radius || 0.34);
+    const rotation = time * (preset.rotationSpeed || 0) - Math.PI / 2;
+    const positions = fifths.map((pitchClass, index) => {
+      const angle = rotation + index * Math.PI * 2 / 12;
+      const energy = chroma[pitchClass];
+      return {
+        x: cx + Math.cos(angle) * radius * (1 + energy * 0.08),
+        y: cy + Math.sin(angle) * radius * (1 + energy * 0.08),
+        energy,
+        angle
+      };
+    });
+
+    ctx.globalAlpha = preset.polygonAlpha || 0.45;
+    ctx.lineWidth = Math.max(1, size * 0.0025);
+    ctx.beginPath();
+    positions.forEach((point, index) => index ? ctx.lineTo(point.x, point.y) : ctx.moveTo(point.x, point.y));
+    ctx.closePath();
+    ctx.stroke();
+
+    if (preset.mirror) {
+      ctx.globalAlpha *= 0.6;
+      ctx.beginPath();
+      [...positions].reverse().forEach((point, index) => {
+        const x = cx + (point.x - cx) * (0.58 + point.energy * 0.3);
+        const y = cy + (point.y - cy) * (0.58 + point.energy * 0.3);
+        index ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+      });
+      ctx.closePath();
+      ctx.stroke();
+    }
+
+    positions.forEach((point, index) => {
+      ctx.globalAlpha = 0.35 + point.energy * 0.65;
+      ctx.beginPath();
+      ctx.arc(point.x, point.y, 2.5 + point.energy * size * 0.013, 0, Math.PI * 2);
+      ctx.fill();
+      if (preset.labels) {
+        ctx.globalAlpha = 0.55 + point.energy * 0.45;
+        ctx.font = `${Math.max(10, size * 0.018)}px sans-serif`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(labels[index], point.x + Math.cos(point.angle) * size * 0.028, point.y + Math.sin(point.angle) * size * 0.028);
+      }
+    });
+  }
+
+  function drawLissajous(ctx, values, cx, cy, size, time, preset) {
+    const ratioX = Math.max(1, preset.ratioX || 3);
+    const ratioY = Math.max(1, preset.ratioY || 2);
+    const trails = Math.max(1, preset.trailCount || 3);
+    const scale = size * (preset.scale || 0.34) * state.album.visualizerIntensity;
+    const modulation = 0.72 + state.visualizerMetrics.energy * 0.65;
+
+    for (let trail = trails - 1; trail >= 0; trail -= 1) {
+      const phase = time * (preset.phaseSpeed || 0.0004) + trail * 0.12;
+      ctx.globalAlpha = (0.12 + state.visualizerMetrics.energy * 0.5) * (1 - trail / (trails + 1));
+      ctx.lineWidth = Math.max(0.8, (preset.lineWidth || 1.5) + (trails - trail) * 0.16);
+      ctx.beginPath();
+      for (let index = 0; index <= 240; index += 1) {
+        const angle = index / 240 * Math.PI * 2;
+        const binValue = values[Math.floor(index / 241 * values.length * 0.7)] / 255;
+        const x = cx + Math.sin(angle * ratioX + phase) * scale * modulation;
+        const y = cy + Math.sin(angle * ratioY) * scale * (0.82 + binValue * 0.32);
+        index ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+      }
+      ctx.closePath();
+      ctx.stroke();
+    }
+  }
+
+  function drawTonnetz(ctx, values, cx, cy, size, time, preset) {
+    const chroma = pitchClassEnergy(values);
+    const columns = Math.max(3, preset.columns || 9);
+    const rows = Math.max(3, preset.rows || 9);
+    const spacing = size * (preset.spacing || 0.09);
+    const rotation = time * (preset.driftSpeed || 0);
+    const nodes = [];
+
+    for (let row = 0; row < rows; row += 1) {
+      for (let column = 0; column < columns; column += 1) {
+        const pitchClass = ((column * 7 + row * 4) % 12 + 12) % 12;
+        const localX = (column - (columns - 1) / 2 + (row % 2) * 0.5) * spacing;
+        const localY = (row - (rows - 1) / 2) * spacing * 0.866;
+        nodes.push({
+          x: cx + localX * Math.cos(rotation) - localY * Math.sin(rotation),
+          y: cy + localX * Math.sin(rotation) + localY * Math.cos(rotation),
+          pitchClass,
+          energy: chroma[pitchClass]
+        });
+      }
+    }
+
+    ctx.lineWidth = Math.max(0.7, size * 0.0012);
+    for (let index = 0; index < nodes.length; index += 1) {
+      const column = index % columns;
+      const neighbors = [index + 1, index + columns, index + columns + (Math.floor(index / columns) % 2 ? 1 : -1)];
+      neighbors.forEach((neighborIndex) => {
+        if (column === columns - 1 || !nodes[neighborIndex]) return;
+        const neighbor = nodes[neighborIndex];
+        ctx.globalAlpha = 0.06 + Math.max(nodes[index].energy, neighbor.energy) * 0.42;
+        ctx.beginPath();
+        ctx.moveTo(nodes[index].x, nodes[index].y);
+        ctx.lineTo(neighbor.x, neighbor.y);
+        ctx.stroke();
+      });
+    }
+
+    nodes.forEach((node) => {
+      const active = node.energy >= (preset.activeThreshold || 0.25);
+      ctx.globalAlpha = active ? 0.45 + node.energy * 0.55 : 0.12;
+      ctx.beginPath();
+      ctx.arc(node.x, node.y, (preset.nodeSize || 2.8) + node.energy * 5, 0, Math.PI * 2);
+      ctx.fill();
+    });
+  }
+
+  function euclideanPulse(index, steps, pulses) {
+    return Math.floor((index + 1) * pulses / steps) !== Math.floor(index * pulses / steps);
+  }
+
+  function drawPolyrhythm(ctx, values, cx, cy, size, time, preset) {
+    const meters = Array.isArray(preset.meters) ? preset.meters : [3, 4];
+    const pulses = Array.isArray(preset.pulses) ? preset.pulses : [2, 3];
+    const speed = preset.speed || 0.00035;
+    meters.forEach((meterValue, ring) => {
+      const meter = Math.max(2, Math.round(meterValue));
+      const radius = size * (0.2 + ring * (preset.radiusStep || 0.07));
+      const playhead = Math.floor((time * Math.abs(speed) * meter) % meter);
+      const rotation = time * speed * (ring % 2 ? -1 : 1) - Math.PI / 2;
+      ctx.globalAlpha = 0.16 + state.visualizerMetrics.mids * 0.35;
+      ctx.beginPath();
+      ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+      ctx.stroke();
+
+      for (let step = 0; step < meter; step += 1) {
+        const angle = rotation + step * Math.PI * 2 / meter;
+        const active = euclideanPulse(step, meter, Math.min(meter, pulses[ring] || 1));
+        const hit = step === playhead;
+        const binValue = values[Math.floor((step / meter) * values.length * 0.65)] / 255;
+        ctx.globalAlpha = hit ? 1 : active ? 0.58 : 0.18;
+        ctx.beginPath();
+        ctx.arc(
+          cx + Math.cos(angle) * radius,
+          cy + Math.sin(angle) * radius,
+          (preset.nodeSize || 3.2) + binValue * 4 + (hit ? state.visualizerMetrics.beat * 8 : 0),
+          0,
+          Math.PI * 2
+        );
+        ctx.fill();
+      }
+    });
+  }
+
+  function drawSpectralTerrain(ctx, values, cx, cy, size, time, preset) {
+    const ridges = Math.max(4, preset.ridges || 24);
+    const bins = Math.max(12, preset.bins || 42);
+    state.terrainFrame += 1;
+    if (state.terrainFrame % Math.max(1, preset.sampleEvery || 3) === 0) {
+      const ridge = [];
+      for (let index = 0; index < bins; index += 1) {
+        const sourceIndex = Math.floor(Math.pow(index / (bins - 1), 1.5) * values.length * 0.72);
+        ridge.push(values[sourceIndex] / 255);
+      }
+      state.terrainHistory.unshift(ridge);
+      state.terrainHistory.length = Math.min(ridges, state.terrainHistory.length);
+    }
+
+    const halfWidth = size * 0.38;
+    [...state.terrainHistory].reverse().forEach((ridge, reverseIndex) => {
+      const depthIndex = state.terrainHistory.length - 1 - reverseIndex;
+      const perspective = 0.42 + (1 - depthIndex / ridges) * 0.58;
+      const baseline = cy + size * 0.27 - depthIndex * size * (preset.depth || 0.015);
+      ctx.globalAlpha = 0.12 + perspective * 0.5;
+      ctx.beginPath();
+      ridge.forEach((value, index) => {
+        const x = cx + ((index / (bins - 1)) * 2 - 1) * halfWidth * perspective;
+        const y = baseline - value * size * (preset.height || 0.2) * perspective;
+        index ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+      });
+      ctx.stroke();
+      ctx.lineTo(cx + halfWidth * perspective, baseline);
+      ctx.lineTo(cx - halfWidth * perspective, baseline);
+      ctx.closePath();
+      ctx.globalAlpha = preset.fillAlpha || 0.05;
+      ctx.fill();
+    });
+    return time;
+  }
+
   function drawVisualizer(time = 0) {
     const width = state.visualizerWidth;
     const height = state.visualizerHeight;
@@ -951,15 +1212,25 @@
       visualizerContext.strokeStyle = accent;
       visualizerContext.fillStyle = accent;
       const values = analyserValues(time);
+      const preset = currentVisualizerPreset();
       drawVisualizerAtmosphere(visualizerContext, cx, cy, size, time);
 
-      if (state.album.visualizer === "wave-ring") {
-        drawWaveRing(visualizerContext, values, cx, cy, size, time);
-      } else if (state.album.visualizer === "constellation") {
-        drawConstellation(visualizerContext, values, cx, cy, size, time);
-      } else {
-        drawRadialBars(visualizerContext, values, cx, cy, size, time);
-      }
+      const renderers = {
+        "circle-of-fifths": drawCircleOfFifths,
+        lissajous: drawLissajous,
+        tonnetz: drawTonnetz,
+        polyrhythm: drawPolyrhythm,
+        "spectral-terrain": drawSpectralTerrain
+      };
+      (renderers[state.album.visualizer] || drawCircleOfFifths)(
+        visualizerContext,
+        values,
+        cx,
+        cy,
+        size,
+        time,
+        preset
+      );
       visualizerContext.globalAlpha = 1;
       visualizerContext.restore();
     }
@@ -1077,6 +1348,16 @@
   }
 
   async function loadSongs() {
+    await Promise.all(VISUALIZER_IDS.map(async (visualizerId) => {
+      try {
+        const response = await fetch(`./visualizers/${visualizerId}.json`, { cache: "no-store" });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        state.visualizerConfigs[visualizerId] = await response.json();
+      } catch (error) {
+        console.warn(`Could not load ${visualizerId} presets:`, error);
+      }
+    }));
+
     let source = window.SONGS;
 
     if (!source) {

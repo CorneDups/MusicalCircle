@@ -1,7 +1,7 @@
 // Automatically generated. Do not edit by hand.
 window.SONGS = {
   "version": 3,
-  "generatedAt": "2026-08-15T18:13:41.065Z",
+  "generatedAt": "2026-08-16T13:48:34.945Z",
   "folderCount": 12,
   "totalSongs": 121,
   "folders": [
@@ -25,183 +25,183 @@ window.SONGS = {
       "songs": [
         {
           "id": 1,
-          "file": "01 - The Veil/song0.mp3",
-          "title": "song0",
+          "file": "01 - The Veil/01_Dance with Me.mp3",
+          "title": "01_Dance with Me",
           "artist": "Musical Circle",
           "artwork": null
         },
         {
           "id": 2,
-          "file": "01 - The Veil/song000.mp3",
-          "title": "song000",
+          "file": "01 - The Veil/02_Lead me.mp3",
+          "title": "02_Lead me",
           "artist": "Musical Circle",
           "artwork": null
         },
         {
           "id": 3,
-          "file": "01 - The Veil/song001.mp3",
-          "title": "song001",
+          "file": "01 - The Veil/03_The Unknown.mp3",
+          "title": "03_The Unknown",
           "artist": "Musical Circle",
           "artwork": null
         },
         {
           "id": 4,
-          "file": "01 - The Veil/song1.mp3",
-          "title": "song1",
+          "file": "01 - The Veil/04_Ashes.mp3",
+          "title": "04_Ashes",
           "artist": "Musical Circle",
           "artwork": null
         },
         {
           "id": 5,
-          "file": "01 - The Veil/song002.mp3",
-          "title": "song002",
+          "file": "01 - The Veil/05_Shadow.mp3",
+          "title": "05_Shadow",
           "artist": "Musical Circle",
           "artwork": null
         },
         {
           "id": 6,
-          "file": "01 - The Veil/song2.mp3",
-          "title": "song2",
+          "file": "01 - The Veil/06_Fire and Blood.mp3",
+          "title": "06_Fire and Blood",
           "artist": "Musical Circle",
           "artwork": null
         },
         {
           "id": 7,
-          "file": "01 - The Veil/song003.mp3",
-          "title": "song003",
+          "file": "01 - The Veil/07_Void.mp3",
+          "title": "07_Void",
           "artist": "Musical Circle",
           "artwork": null
         },
         {
           "id": 8,
-          "file": "01 - The Veil/song3.mp3",
-          "title": "song3",
+          "file": "01 - The Veil/08_Lion Roar.mp3",
+          "title": "08_Lion Roar",
           "artist": "Musical Circle",
           "artwork": null
         },
         {
           "id": 9,
-          "file": "01 - The Veil/song004.mp3",
-          "title": "song004",
+          "file": "01 - The Veil/10_Abyss.mp3",
+          "title": "10_Abyss",
           "artist": "Musical Circle",
           "artwork": null
         },
         {
           "id": 10,
-          "file": "01 - The Veil/song4.mp3",
-          "title": "song4",
+          "file": "01 - The Veil/11_Wilderness.mp3",
+          "title": "11_Wilderness",
           "artist": "Musical Circle",
           "artwork": null
         },
         {
           "id": 11,
-          "file": "01 - The Veil/song5.mp3",
-          "title": "song5",
+          "file": "01 - The Veil/12_Dawn.mp3",
+          "title": "12_Dawn",
           "artist": "Musical Circle",
           "artwork": null
         },
         {
           "id": 12,
-          "file": "01 - The Veil/song006.mp3",
-          "title": "song006",
+          "file": "01 - The Veil/13_I am Yours.mp3",
+          "title": "13_I am Yours",
           "artist": "Musical Circle",
           "artwork": null
         },
         {
           "id": 13,
-          "file": "01 - The Veil/song6.mp3",
-          "title": "song6",
+          "file": "01 - The Veil/14_First Breath.mp3",
+          "title": "14_First Breath",
           "artist": "Musical Circle",
           "artwork": null
         },
         {
           "id": 14,
-          "file": "01 - The Veil/song7.mp3",
-          "title": "song7",
+          "file": "01 - The Veil/15_At the Cross.mp3",
+          "title": "15_At the Cross",
           "artist": "Musical Circle",
           "artwork": null
         },
         {
           "id": 15,
-          "file": "01 - The Veil/song008.mp3",
-          "title": "song008",
+          "file": "01 - The Veil/16_Call to Reveal.mp3",
+          "title": "16_Call to Reveal",
           "artist": "Musical Circle",
           "artwork": null
         },
         {
           "id": 16,
-          "file": "01 - The Veil/song8.mp3",
-          "title": "song8",
+          "file": "01 - The Veil/17_Let the Fire Speak.mp3",
+          "title": "17_Let the Fire Speak",
           "artist": "Musical Circle",
           "artwork": null
         },
         {
           "id": 17,
-          "file": "01 - The Veil/song9.mp3",
-          "title": "song9",
+          "file": "01 - The Veil/18_Let the River Run.mp3",
+          "title": "18_Let the River Run",
           "artist": "Musical Circle",
           "artwork": null
         },
         {
           "id": 18,
-          "file": "01 - The Veil/song111.mp3",
-          "title": "song111",
+          "file": "01 - The Veil/19_Eternal Light.mp3",
+          "title": "19_Eternal Light",
           "artist": "Musical Circle",
           "artwork": null
         },
         {
           "id": 19,
-          "file": "01 - The Veil/song222.mp3",
-          "title": "song222",
+          "file": "01 - The Veil/20_Let Go.mp3",
+          "title": "20_Let Go",
           "artist": "Musical Circle",
           "artwork": null
         },
         {
           "id": 20,
-          "file": "01 - The Veil/song333.mp3",
-          "title": "song333",
+          "file": "01 - The Veil/21_Alpha and Omega.mp3",
+          "title": "21_Alpha and Omega",
           "artist": "Musical Circle",
           "artwork": null
         },
         {
           "id": 21,
-          "file": "01 - The Veil/song444.mp3",
-          "title": "song444",
+          "file": "01 - The Veil/22_In Your Arms_A.mp3",
+          "title": "22_In Your Arms_A",
           "artist": "Musical Circle",
           "artwork": null
         },
         {
           "id": 22,
-          "file": "01 - The Veil/song555.mp3",
-          "title": "song555",
+          "file": "01 - The Veil/22_In Your Arms_B.mp3",
+          "title": "22_In Your Arms_B",
           "artist": "Musical Circle",
           "artwork": null
         },
         {
           "id": 23,
-          "file": "01 - The Veil/song666.mp3",
-          "title": "song666",
+          "file": "01 - The Veil/22_In Your Arms_C.mp3",
+          "title": "22_In Your Arms_C",
           "artist": "Musical Circle",
           "artwork": null
         },
         {
           "id": 24,
-          "file": "01 - The Veil/song777.mp3",
-          "title": "song777",
+          "file": "01 - The Veil/22_In Your Arms_D.mp3",
+          "title": "22_In Your Arms_D",
           "artist": "Musical Circle",
           "artwork": null
         },
         {
           "id": 25,
-          "file": "01 - The Veil/song888.mp3",
-          "title": "song888",
+          "file": "01 - The Veil/22_In Your Arms_E.mp3",
+          "title": "22_In Your Arms_E",
           "artist": "Musical Circle",
           "artwork": null
         },
         {
           "id": 26,
-          "file": "01 - The Veil/song999.mp3",
-          "title": "song999",
+          "file": "01 - The Veil/22_In Your Arms_F.mp3",
+          "title": "22_In Your Arms_F",
           "artist": "Musical Circle",
           "artwork": null
         }

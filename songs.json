@@ -1,8 +1,8 @@
 {
   "version": 3,
-  "generatedAt": "2026-08-16T16:36:35.575Z",
+  "generatedAt": "2026-08-24T07:04:07.891Z",
   "folderCount": 12,
-  "totalSongs": 121,
+  "totalSongs": 123,
   "folders": [
     {
       "id": 1,
@@ -1111,9 +1111,23 @@
           "title": "02 - Pigs and Pearls",
           "artist": "",
           "artwork": null
+        },
+        {
+          "id": 3,
+          "file": "12 - Sacred Heart/03 - Archaea.mp3",
+          "title": "03 - Archaea",
+          "artist": "",
+          "artwork": null
+        },
+        {
+          "id": 4,
+          "file": "12 - Sacred Heart/04 - Endless like Me.mp3",
+          "title": "04 - Endless like Me",
+          "artist": "",
+          "artwork": null
         }
       ],
-      "songCount": 2
+      "songCount": 4
     }
   ]
 }

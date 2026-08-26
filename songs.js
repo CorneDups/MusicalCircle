@@ -1,9 +1,9 @@
 // Automatically generated. Do not edit by hand.
 window.SONGS = {
   "version": 3,
-  "generatedAt": "2026-08-24T07:04:07.891Z",
+  "generatedAt": "2026-08-26T17:35:34.190Z",
   "folderCount": 12,
-  "totalSongs": 123,
+  "totalSongs": 124,
   "folders": [
     {
       "id": 1,
@@ -1115,8 +1115,8 @@ window.SONGS = {
         },
         {
           "id": 3,
-          "file": "12 - Sacred Heart/03 - Archaea.mp3",
-          "title": "03 - Archaea",
+          "file": "12 - Sacred Heart/03 - Acraea.mp3",
+          "title": "03 - Acraea",
           "artist": "",
           "artwork": null
         },
@@ -1126,9 +1126,16 @@ window.SONGS = {
           "title": "04 - Endless like Me",
           "artist": "",
           "artwork": null
+        },
+        {
+          "id": 5,
+          "file": "12 - Sacred Heart/05 - The Pearl's Journey.mp3",
+          "title": "05 - The Pearl's Journey",
+          "artist": "",
+          "artwork": null
         }
       ],
-      "songCount": 4
+      "songCount": 5
     }
   ]
 };

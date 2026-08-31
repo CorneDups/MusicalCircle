@@ -8,5 +8,7 @@
   "visualizerPreset": "mandala",
   "visualizerIntensity": 1.12,
   "artworkMotion": "rotate",
-  "preferEmbeddedArtwork": true
+  "preferEmbeddedArtwork": true,
+  "cover": "cover.jpg",
+  "background": "background.jpg"
 }

@@ -1,9 +1,9 @@
 // Automatically generated. Do not edit by hand.
 window.SONGS = {
   "version": 3,
-  "generatedAt": "2026-08-31T09:28:25.401Z",
+  "generatedAt": "2026-09-01T11:50:14.078Z",
   "folderCount": 13,
-  "totalSongs": 133,
+  "totalSongs": 134,
   "folders": [
     {
       "id": 1,
@@ -14,7 +14,7 @@ window.SONGS = {
         "artist": "Musical Circle",
         "description": "A veiled and intimate passage, carried by hidden light and slow-moving constellations.",
         "cover": "01 - The Veil/cover.jpg",
-        "background": null,
+        "background": "01 - The Veil/background.jpg",
         "accent": "#5b2e91",
         "accentSecondary": "#9d7cf5",
         "visualizer": "circle-of-fifths",
@@ -1218,9 +1218,16 @@ window.SONGS = {
           "title": "06 - Notion",
           "artist": "",
           "artwork": null
+        },
+        {
+          "id": 7,
+          "file": "13 - Sacred Heart/07 - Motion.mp3",
+          "title": "07 - Motion",
+          "artist": "",
+          "artwork": null
         }
       ],
-      "songCount": 6
+      "songCount": 7
     }
   ]
 };

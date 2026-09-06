@@ -1,8 +1,8 @@
 {
   "version": 3,
-  "generatedAt": "2026-09-01T11:50:14.078Z",
+  "generatedAt": "2026-09-06T15:00:07.017Z",
   "folderCount": 13,
-  "totalSongs": 134,
+  "totalSongs": 135,
   "folders": [
     {
       "id": 1,
@@ -589,36 +589,36 @@
         },
         {
           "id": 11,
-          "file": "05 - Journey Back/Chalice of Love.mp3",
-          "title": "Chalice of Love",
+          "file": "05 - Journey Back/12_Wounds of Connection.mp3",
+          "title": "12_Wounds of Connection",
           "artist": "Musical Circle",
           "artwork": null
         },
         {
           "id": 12,
-          "file": "05 - Journey Back/Love that Frees Me.mp3",
-          "title": "Love that Frees Me",
+          "file": "05 - Journey Back/13_When I want to be chosen.mp3",
+          "title": "13_When I want to be chosen",
           "artist": "Musical Circle",
           "artwork": null
         },
         {
           "id": 13,
-          "file": "05 - Journey Back/SC4RS.exe.mp3",
-          "title": "SC4RS.exe",
+          "file": "05 - Journey Back/14_SC4RS.exe.mp3",
+          "title": "14_SC4RS.exe",
           "artist": "Musical Circle",
           "artwork": null
         },
         {
           "id": 14,
-          "file": "05 - Journey Back/When I want to be chosen.mp3",
-          "title": "When I want to be chosen",
+          "file": "05 - Journey Back/16_Love that Frees Me.mp3",
+          "title": "16_Love that Frees Me",
           "artist": "Musical Circle",
           "artwork": null
         },
         {
           "id": 15,
-          "file": "05 - Journey Back/Wounds of Connection.mp3",
-          "title": "Wounds of Connection",
+          "file": "05 - Journey Back/17_Chalice of Love.mp3",
+          "title": "17_Chalice of Love",
           "artist": "Musical Circle",
           "artwork": null
         }
@@ -1224,9 +1224,16 @@
           "title": "07 - Motion",
           "artist": "",
           "artwork": null
+        },
+        {
+          "id": 8,
+          "file": "13 - Sacred Heart/08 - Mighty to Save.mp3",
+          "title": "08 - Mighty to Save",
+          "artist": "",
+          "artwork": null
         }
       ],
-      "songCount": 7
+      "songCount": 8
     }
   ]
 }

@@ -87,7 +87,18 @@
         <input id="autoplay" type="checkbox">
         <span>Play next song automatically</span>
       </label>
+      <button id="copySongLinkButton" class="song-link-button" type="button" title="Copy song link" disabled>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" focusable="false">
+          <path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-2 2M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l2-2"/>
+        </svg>
+        <span>Copy song link</span>
+      </button>
     </section>
+
+    <div id="songLinkFallback" class="song-link-fallback" hidden>
+      <label for="songLinkInput">Song link (copy manually)</label>
+      <input id="songLinkInput" type="text" readonly>
+    </div>
 
     <p id="statusMessage" class="status-message" role="status"></p>
     <audio id="audioPlayer" preload="metadata" crossorigin="anonymous"></audio>

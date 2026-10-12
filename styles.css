@@ -537,6 +537,7 @@ input[type="range"] {
 
 .secondary-controls {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 1.2rem;
@@ -561,6 +562,43 @@ input[type="range"] {
   display: flex;
   align-items: center;
   gap: 0.55rem;
+}
+
+.song-link-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  padding: 0.55rem 0.7rem;
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 0.5rem;
+  background: rgba(5, 9, 17, 0.57);
+}
+
+.song-link-button:hover:not(:disabled) {
+  border-color: var(--accent);
+}
+
+.song-link-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.song-link-fallback {
+  margin-top: 1rem;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.song-link-fallback input {
+  width: 100%;
+  margin-top: 0.4rem;
+  padding: 0.65rem;
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 0.5rem;
+  background: rgba(12, 18, 31, 0.85);
 }
 
 .status-message {

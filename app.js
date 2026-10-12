@@ -22,6 +22,9 @@
   const playButton = document.querySelector("#playButton");
   const previousButton = document.querySelector("#previousButton");
   const nextButton = document.querySelector("#nextButton");
+  const copySongLinkButton = document.querySelector("#copySongLinkButton");
+  const songLinkFallback = document.querySelector("#songLinkFallback");
+  const songLinkInput = document.querySelector("#songLinkInput");
   const progress = document.querySelector("#progress");
   const currentTime = document.querySelector("#currentTime");
   const duration = document.querySelector("#duration");
@@ -58,6 +61,7 @@
     selectedFolderIndex: -1,
     songs: [],
     currentIndex: -1,
+    playbackRequest: 0,
     played: new Set(),
     seeking: false,
     album: { ...DEFAULT_ALBUM },
@@ -192,6 +196,52 @@
   function setStatus(message = "", isError = false) {
     statusMessage.textContent = message;
     statusMessage.classList.toggle("error", isError);
+  }
+
+  async function copySongLink() {
+    const song = state.songs[state.currentIndex];
+    if (!song) {
+      setStatus("Select a song before copying its link.", true);
+      return;
+    }
+
+    const url = new URL(window.location.href);
+    url.hash = new URLSearchParams({ song: song.file }).toString();
+    songLinkFallback.hidden = true;
+
+    if (navigator.clipboard?.writeText) {
+      try {
+        await navigator.clipboard.writeText(url.href);
+        setStatus(`Song link copied for “${song.title}”.`);
+        return;
+      } catch (error) {
+        console.warn("Could not copy the song link to the clipboard.", error);
+      }
+    }
+
+    songLinkInput.value = url.href;
+    songLinkFallback.hidden = false;
+    songLinkInput.focus();
+    songLinkInput.select();
+    setStatus("Automatic copying is unavailable. Copy the selected song link manually.");
+  }
+
+  async function selectSharedSong() {
+    const parameters = new URLSearchParams(window.location.hash.slice(1));
+    if (!parameters.has("song")) return false;
+
+    const file = parameters.get("song");
+    for (const [folderIndex, folder] of state.folders.entries()) {
+      const songIndex = folder.songs.findIndex((song) => song.file === file);
+      if (songIndex < 0) continue;
+
+      chooseFolder(folderIndex, false);
+      await selectSong(songIndex, true, true);
+      return true;
+    }
+
+    setStatus("This shared song is no longer available. Choose another song from the library.", true);
+    return true;
   }
 
   function updateMediaSession(song = null) {
@@ -478,10 +528,14 @@
   }
 
   function resetPlayer() {
+    state.playbackRequest += 1;
     audio.pause();
     audio.removeAttribute("src");
     audio.load();
     state.currentIndex = -1;
+    copySongLinkButton.disabled = true;
+    songLinkFallback.hidden = true;
+    songLinkInput.value = "";
     state.played = new Set();
     state.seeking = false;
     state.artworkRequest += 1;
@@ -625,6 +679,12 @@
 
     if (!state.audioContext) {
       state.audioContext = new AudioContextClass();
+    }
+
+    if (state.audioContext.state === "suspended") await state.audioContext.resume();
+
+    // Keep native autoplay audible until Web Audio is allowed to run.
+    if (!state.sourceNode) {
       state.analyser = state.audioContext.createAnalyser();
       state.analyser.fftSize = 512;
       state.analyser.smoothingTimeConstant = 0.82;
@@ -634,7 +694,6 @@
       state.frequencyData = new Uint8Array(state.analyser.frequencyBinCount);
     }
 
-    if (state.audioContext.state === "suspended") await state.audioContext.resume();
   }
 
   function waitForAudioReady(timeoutMs = 6000) {
@@ -671,14 +730,18 @@
     });
   }
 
-  async function selectSong(index, shouldPlay) {
+  async function selectSong(index, shouldPlay, fromSharedLink = false) {
     if (state.songs.length === 0) return;
 
     const safeIndex = (index + state.songs.length) % state.songs.length;
     const song = state.songs[safeIndex];
     const changed = safeIndex !== state.currentIndex;
+    const playbackRequest = ++state.playbackRequest;
 
     state.currentIndex = safeIndex;
+    copySongLinkButton.disabled = false;
+    songLinkFallback.hidden = true;
+    songLinkInput.value = "";
     state.played.add(safeIndex);
 
     if (changed) {
@@ -700,10 +763,26 @@
 
     if (shouldPlay) {
       try {
-        await ensureAudioGraph();
+        // A suspended AudioContext can wait for a gesture indefinitely on a shared link.
+        if (!fromSharedLink) await ensureAudioGraph();
+        if (playbackRequest !== state.playbackRequest) return;
         await waitForAudioReady();
+        if (playbackRequest !== state.playbackRequest) return;
         await audio.play();
+        if (playbackRequest !== state.playbackRequest) return;
+        if (fromSharedLink) {
+          ensureAudioGraph().catch((error) => {
+            console.error("Could not start the audio visualizer.", error);
+            if (playbackRequest !== state.playbackRequest) return;
+            setStatus("The audio visualizer could not start. Tap Play to try again.", true);
+          });
+        }
       } catch (error) {
+        if (playbackRequest !== state.playbackRequest) return;
+        if (fromSharedLink && error?.name === "NotAllowedError") {
+          setStatus(`Ready to play “${song.title}”. Tap Play to listen.`);
+          return;
+        }
         const message = error?.message === "Audio took too long to load"
           ? "The MP3 is taking too long to load. Please try again in a moment."
           : "Playback was blocked or the MP3 could not be loaded. Try again, or open the app from a local web server.";
@@ -1242,6 +1321,10 @@
   playButton.addEventListener("click", togglePlayback);
   previousButton.addEventListener("click", () => goToRelativeSong(-1));
   nextButton.addEventListener("click", () => goToRelativeSong(1));
+  copySongLinkButton.addEventListener("click", copySongLink);
+  window.addEventListener("hashchange", () => {
+    if (state.folders.length > 0) selectSharedSong();
+  });
 
   if ("mediaSession" in navigator) {
     const mediaSessionActions = {
@@ -1381,6 +1464,7 @@
         `${totalSongs} song${totalSongs === 1 ? "" : "s"} ready in ` +
         `${state.folders.length} folder${state.folders.length === 1 ? "" : "s"}.`
       );
+      selectSharedSong();
     } else {
       state.songs = [];
       renderSongs();

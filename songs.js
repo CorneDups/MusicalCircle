@@ -1,9 +1,9 @@
 // Automatically generated. Do not edit by hand.
 window.SONGS = {
   "version": 3,
-  "generatedAt": "2026-09-06T15:00:07.017Z",
+  "generatedAt": "2026-10-12T20:47:59.113Z",
   "folderCount": 13,
-  "totalSongs": 135,
+  "totalSongs": 137,
   "folders": [
     {
       "id": 1,
@@ -1232,9 +1232,23 @@ window.SONGS = {
           "title": "08 - Mighty to Save",
           "artist": "",
           "artwork": null
+        },
+        {
+          "id": 9,
+          "file": "13 - Sacred Heart/09 - Kafka.mp3",
+          "title": "09 - Kafka",
+          "artist": "",
+          "artwork": null
+        },
+        {
+          "id": 10,
+          "file": "13 - Sacred Heart/10 - Rocks.mp3",
+          "title": "10 - Rocks",
+          "artist": "",
+          "artwork": null
         }
       ],
-      "songCount": 8
+      "songCount": 10
     }
   ]
 };

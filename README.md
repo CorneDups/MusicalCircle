@@ -13,6 +13,7 @@ It now supports:
 - an audio-reactive Web Audio visualizer;
 - five music-theory visualizers with editable JSON tuning presets;
 - unchanged play, pause, previous, next, progress, volume, and autoplay controls;
+- shareable song links with a copy-link button on the player;
 - automatic generation and GitHub Pages deployment.
 
 ## Run locally
@@ -284,6 +285,16 @@ circular-music-player/
 
 ## Notes
 
+- Select a song, then use Copy song link beside the volume and autoplay controls to copy its
+  shareable URL. If clipboard access is unavailable or denied, the player displays
+  a selected link you can copy manually.
+- Shared links use `#song=` with the URL-encoded MP3 path. Opening a link selects
+  the matching album and song and attempts playback from the beginning. If the
+  browser blocks autoplay, tap Play to listen. Links also work when navigating
+  between song hashes in an already-open player.
+- Song links survive additions and reordering, but renaming or moving an MP3
+  breaks its existing links. Missing songs show a message and leave the library
+  available. Opening the site without a song link keeps the normal album browser.
 - MP3 is the supported audio format in this version.
 - Keep all configured artwork paths inside their album folder.
 - Do not manually edit `songs.js` or `songs.json`; they are generated files.

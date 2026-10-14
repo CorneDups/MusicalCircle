@@ -1,9 +1,9 @@
 // Automatically generated. Do not edit by hand.
 window.SONGS = {
   "version": 3,
-  "generatedAt": "2026-10-12T20:47:59.113Z",
+  "generatedAt": "2026-10-14T07:35:56.889Z",
   "folderCount": 13,
-  "totalSongs": 137,
+  "totalSongs": 140,
   "folders": [
     {
       "id": 1,
@@ -1246,9 +1246,30 @@ window.SONGS = {
           "title": "10 - Rocks",
           "artist": "",
           "artwork": null
+        },
+        {
+          "id": 11,
+          "file": "13 - Sacred Heart/11 - Monks Gate.mp3",
+          "title": "11 - Monks Gate",
+          "artist": "",
+          "artwork": null
+        },
+        {
+          "id": 12,
+          "file": "13 - Sacred Heart/12 - Mirror in the tree.mp3",
+          "title": "12 - Mirror in the tree",
+          "artist": "",
+          "artwork": null
+        },
+        {
+          "id": 13,
+          "file": "13 - Sacred Heart/13 - Already Seen.mp3",
+          "title": "13 - Already Seen",
+          "artist": "",
+          "artwork": null
         }
       ],
-      "songCount": 10
+      "songCount": 13
     }
   ]
 };

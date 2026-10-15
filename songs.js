@@ -1,9 +1,9 @@
 // Automatically generated. Do not edit by hand.
 window.SONGS = {
   "version": 3,
-  "generatedAt": "2026-10-14T07:35:56.889Z",
-  "folderCount": 13,
-  "totalSongs": 140,
+  "generatedAt": "2026-10-15T13:12:49.698Z",
+  "folderCount": 14,
+  "totalSongs": 142,
   "folders": [
     {
       "id": 1,
@@ -1270,6 +1270,42 @@ window.SONGS = {
         }
       ],
       "songCount": 13
+    },
+    {
+      "id": 14,
+      "path": "14 - Mirror World",
+      "name": "14 - Mirror World",
+      "album": {
+        "title": "14 - Mirror World",
+        "artist": "",
+        "description": "",
+        "cover": null,
+        "background": null,
+        "accent": "",
+        "accentSecondary": "",
+        "visualizer": "circle-of-fifths",
+        "visualizerPreset": "default",
+        "visualizerIntensity": 1,
+        "artworkMotion": "pulse",
+        "preferEmbeddedArtwork": true
+      },
+      "songs": [
+        {
+          "id": 1,
+          "file": "14 - Mirror World/01 - Story of Infinite Reflections.mp3",
+          "title": "01 - Story of Infinite Reflections",
+          "artist": "",
+          "artwork": null
+        },
+        {
+          "id": 2,
+          "file": "14 - Mirror World/02 - Infinite Reflection Song.mp3",
+          "title": "02 - Infinite Reflection Song",
+          "artist": "",
+          "artwork": null
+        }
+      ],
+      "songCount": 2
     }
   ]
 };

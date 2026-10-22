@@ -1,8 +1,8 @@
 {
   "version": 3,
-  "generatedAt": "2026-10-15T13:12:49.698Z",
+  "generatedAt": "2026-10-22T19:02:24.600Z",
   "folderCount": 14,
-  "totalSongs": 142,
+  "totalSongs": 148,
   "folders": [
     {
       "id": 1,
@@ -1302,9 +1302,51 @@
           "title": "02 - Infinite Reflection Song",
           "artist": "",
           "artwork": null
+        },
+        {
+          "id": 3,
+          "file": "14 - Mirror World/03_The Four Marks.mp3",
+          "title": "03_The Four Marks",
+          "artist": "",
+          "artwork": null
+        },
+        {
+          "id": 4,
+          "file": "14 - Mirror World/04_The Hill.mp3",
+          "title": "04_The Hill",
+          "artist": "",
+          "artwork": null
+        },
+        {
+          "id": 5,
+          "file": "14 - Mirror World/05_Tree at the Centre.mp3",
+          "title": "05_Tree at the Centre",
+          "artist": "",
+          "artwork": null
+        },
+        {
+          "id": 6,
+          "file": "14 - Mirror World/06_Golden Foundation.mp3",
+          "title": "06_Golden Foundation",
+          "artist": "",
+          "artwork": null
+        },
+        {
+          "id": 7,
+          "file": "14 - Mirror World/07_Vine and Shadow.mp3",
+          "title": "07_Vine and Shadow",
+          "artist": "",
+          "artwork": null
+        },
+        {
+          "id": 8,
+          "file": "14 - Mirror World/08_The Little Branch.mp3",
+          "title": "08_The Little Branch",
+          "artist": "",
+          "artwork": null
         }
       ],
-      "songCount": 2
+      "songCount": 8
     }
   ]
 }

@@ -628,8 +628,8 @@ input[type="range"] {
   animation: artwork-rotate 26s linear infinite;
 }
 
-.motion-pulse.is-playing .artwork-disc {
-  animation: artwork-pulse 4.8s ease-in-out infinite;
+.motion-pulse .artwork-disc {
+  transform: scale(var(--artwork-scale, 1.015));
 }
 
 .motion-still .artwork-disc {
@@ -638,11 +638,6 @@ input[type="range"] {
 
 @keyframes artwork-rotate {
   to { transform: scale(1.015) rotate(360deg); }
-}
-
-@keyframes artwork-pulse {
-  0%, 100% { transform: scale(1.015); }
-  50% { transform: scale(1.055); }
 }
 
 @media (max-width: 700px) {
@@ -740,6 +735,10 @@ input[type="range"] {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .motion-pulse .artwork-disc {
+    transform: scale(1.015);
+  }
+
   *,
   *::before,
   *::after {

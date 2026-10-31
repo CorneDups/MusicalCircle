@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "test": "node --test",
     "songs": "node scripts/generate-song-list.mjs",
     "build": "node scripts/build-site.mjs",
     "preview": "node scripts/generate-song-list.mjs && node scripts/preview-server.mjs"

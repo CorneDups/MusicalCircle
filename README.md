@@ -179,9 +179,101 @@ Available patterns:
 
 Each engine reads named presets from its matching file in `visualizers/`. Edit those JSON values to tune geometry, density, motion, and response, or add another object under `presets` and select it with `visualizerPreset` in an album's `album.json`. The `defaultPreset` field controls the fallback variation for that engine.
 
-All patterns share bass, midrange, treble, energy, and beat analysis. The canvas also keeps a fading previous frame, creating the evolving trails and motion associated with classic Winamp visualizations.
+All patterns share one browser-local analysis pipeline:
 
-Before playback begins, each pattern has a subtle idle animation. When playback starts, the visualization switches to measured audio frequencies.
+- bass (30-250 Hz), midrange (250-4000 Hz), and treble (4000-16000 Hz,
+  capped by the browser's Nyquist frequency);
+- waveform RMS, with a silence threshold of `0.001` (approximately -60 dBFS);
+- transient detection using positive spectral flux, an adaptive one-second
+  baseline, and at least 120 ms between detected events;
+- a separate onset event and a visible response that decays with a 200 ms
+  time constant;
+- slow level adaptation with normalization gain capped at 4, so quiet non-silent
+  passages remain responsive without amplifying silence.
+
+Transient and waveform analysis uses an unsmoothed 2048-point FFT, polled every
+16 ms independently of drawing. A separate 8192-point FFT supplies the visual
+frequency detail approximately every 50 ms. Attack/release smoothing, trail
+fading, and terrain sampling use elapsed time rather than frame counts.
+`sampleEvery` in terrain presets retains its existing meaning at a 60 Hz
+reference rate: `2` is a sampling interval of about 33 ms.
+
+Idle animation is decorative and never feeds the measured bands or onset
+detector. Pausing settles back into a slower idle scene; buffering, seeking, and
+unavailable audio analysis do not invent musical activity. Track changes and
+seeks clear prior analysis and terrain history. Hidden tabs stop visual work,
+not playback, and resume with fresh analysis instead of a catch-up burst.
+
+Visual activity follows the audible level, including the volume control and
+mute. If Web Audio is unavailable or cannot initialize, the player reports the
+problem and retains native playback where possible.
+
+### Shared musical effects
+
+The selected engine remains the main scene. A restrained shared layer adds:
+
+- a 128-point halo driven by actual time-domain samples, with a tapered seam
+  and bounded displacement outside the centre controls;
+- expanding onset rings: at most four concurrent waves, a 750 ms lifetime,
+  a smooth fade, and suppression of excess events rather than flashes;
+- seeded, short-lived treble sparks near the outer orbit, capped at 18 emissions
+  per second and 48 particles, with lifetimes of 300-650 ms;
+- slow bass deformation (350 ms attack / 600 ms release), while overall energy
+  controls shared brightness and treble-driven particle density;
+- an audio-driven artwork `pulse` using energy and the onset envelope.
+  `still` stays still and `rotate` retains its intentional 26-second rotation.
+  Only the artwork layer moves; text and transport buttons do not scale.
+
+`visualizerIntensity` scales response amplitude consistently across all five
+engines and the shared layer. The supported range remains 0.5-2. It does not
+change playback volume, analysis thresholds, particle emission counts, or
+event timing. Lissajous intensity now scales musical modulation rather than
+enlarging the entire idle curve.
+
+Shared effects are cleared on track changes, seeks, unavailable analysis, and
+visibility resets. Silence stops new emissions and lets finite effects expire.
+The reduced-motion preference disables the new waveform displacement, rings,
+sparks, bass deformation, and artwork pulse. Existing decorative Canvas motion
+still needs the full low-motion mode planned for Phase 4.
+
+Onsets are not a detected tempo, and frequency bands do not separate instruments.
+Pitch-class highlights remain estimates, not reliable chord recognition.
+Lissajous ratios and polyrhythm patterns are preset-defined artistic geometry;
+rhythm wheels are not yet synchronized to an estimated song tempo.
+
+### Validate audio analysis and effects
+
+Run the dependency-free analysis and effects tests with:
+
+```bash
+npm test
+```
+
+For a real Web Audio check, start the local preview and run this in the browser
+developer console (after interacting with the page to permit audio):
+
+```javascript
+const { checkWebAudio } = await import("./tests/web-audio-check.js");
+await checkWebAudio();
+```
+
+The browser check uses muted synthetic tones and a 120 BPM click train, checks
+band separation, missed/extra onsets, silence, and a p95 detection-latency target
+of 80 ms. It closes its temporary AudioContext afterward. It is a local
+development test and is not included in the deployed site.
+
+For a controlled geometry check while a song is playing:
+
+```javascript
+const { captureVisualResponse } = await import("./tests/visual-response-check.js");
+await captureVisualResponse();
+```
+
+This development-only helper temporarily supplies fixed audio metrics, measures
+the active renderer's response, and restores its instrumentation afterward.
+It throws on invalid captured geometry. Compare results for the same engine,
+preset, and viewport after setting album intensity to 0.5, 1, and 2 and refreshing.
+Do not use this instrumented check for performance measurements.
 
 ## 6. Preview locally
 
@@ -259,9 +351,16 @@ circular-music-player/
 ├── index.html
 ├── styles.css
 ├── app.js
+├── audio-analysis.js        # shared analysis and elapsed-time helpers
+├── visual-effects.js        # shared musical effects and response bounds
 ├── songs.js                 # generated
 ├── songs.json               # generated
 ├── package.json
+├── tests/
+│   ├── audio-analysis.test.js
+│   ├── visual-effects.test.js
+│   ├── web-audio-check.js
+│   └── visual-response-check.js
 ├── music/
 │   ├── 01 - Dawn Collection/
 │   │   ├── album.json

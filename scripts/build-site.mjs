@@ -20,7 +20,7 @@ if (generator.status !== 0) {
 await rm(outputDirectory, { recursive: true, force: true });
 await mkdir(outputDirectory, { recursive: true });
 
-const filesToCopy = ["index.html", "styles.css", "app.js", "audio-analysis.js", "visual-effects.js", "musical-features.js", "visual-comfort.js", "songs.js", "songs.json"];
+const filesToCopy = ["index.html", "styles.css", "app.js", "audio-analysis.js", "visual-effects.js", "musical-features.js", "visual-comfort.js", "scene-evolution.js", "songs.js", "songs.json"];
 for (const file of filesToCopy) {
   await copyFile(path.join(projectRoot, file), path.join(outputDirectory, file));
 }

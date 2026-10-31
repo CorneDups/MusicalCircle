@@ -311,6 +311,9 @@ default browsing remains available and unchanged in purpose.
 
 ### Phase 5: Add song-level visual evolution
 
+**Status:** Implemented and validated; see Section 15. Optional authored cues
+remain separately scoped.
+
 **Dependencies:** Phases 1-4.
 
 1. Add a slow scene envelope using sustained normalized energy and hysteresis.
@@ -1242,3 +1245,125 @@ cost; they do not cover long sessions or physical mobile hardware.
   user testing, long-session profiling, and human perceived alignment remain
   unverified. Browser pointer/keyboard/layout tests are not substitutes for them.
 - Phase 5 song-level visual evolution remains unimplemented.
+
+## 15. Phase 5 execution record and Circle of Fifths comfort fix
+
+### Circle direction correction
+
+The shared camera used `elapsedTime * (0.6 + treble)` plus a beat offset.
+Changing treble multiplied the entire accumulated time, producing angle jumps
+and direction reversals. This became more pronounced later in playback.
+
+- Circle now uses only the preset's signed constant rotation speed.
+  Shared camera rotation is bypassed; bass deformation is uniform rather than
+  asymmetric, preserving wheel orientation while retaining radial response.
+- Other engines use steady elapsed-time camera drift without treble/beat angle
+  offsets. Musical effects still drive scale, geometry, and brightness.
+- Actual circle label-angle capture with alternating controlled treble/beat
+  extremes: 42 frames, all 41 angle steps followed the mandala preset's negative
+  direction (approximately -0.00130 to -0.00136 radians/frame). No shared
+  Canvas rotation calls were present. No preset IDs or speeds were changed.
+
+### Automatic scene evolution
+
+- Added dependency-free `scene-evolution.js`, updated with audio polling rather
+  than drawing. It consumes only measured normalized energy/availability/
+  silence; no authored cues, random transitions, or section-recognition claims.
+- Energy smoothing uses 1.5 s attack / 2.5 s release. Candidate transitions
+  require two continuous seconds. Hysteresis thresholds:
+  quiet -> building above 0.24; building -> strong above 0.36 or settling below
+  0.16; strong -> settling below 0.28; settling -> quiet below 0.18 or building
+  above 0.28.
+- Artistic state strength blends with 3 s attack / 4 s release. Bounded controls:
+  density 0.65-1.35, persistence 0.75-1.35, additional expansion 0-3.5%,
+  album accent blending 0.15-0.85.
+- Density affects circle petal opacity, Tonnetz region opacity, Lissajous trail
+  count, and the visible subset of shared sparks. Global trail persistence,
+  expansion, and slowly blended existing album colors apply across engines.
+  Terrain retains its configured palette-mix limits and fixed history.
+- Quality still reduces decoration independently. Detector thresholds/events,
+  spark emission model, harmony, pulse timing, volume, intensity range, and
+  preset names are unchanged. Scene thresholds do not depend on intensity.
+- Existing track/seek/view/engine/visibility resets clear the scene; seeking
+  learns the destination from fresh measurements rather than replaying skipped
+  transitions. Silent/unavailable samples cannot build.
+- Reduced motion bypasses evolving palette and geometry entirely. No scene
+  control can override stationary low-motion rendering.
+
+### Tests and rendered evidence
+
+- **37/37 Node tests passed**, including five scene tests covering all four
+  phases, isolated spikes/chatter, output bounds, silence/unavailability,
+  resets/gaps, immutable input, smooth transitions, and 30/60/144 Hz agreement
+  within the existing 5% criterion.
+- A chatter fixture initially exposed the asymmetric smoothing bias near the
+  entry threshold. Raised only the artistic quiet-entry threshold to 0.24;
+  all tests passed. Audio detector thresholds were not changed.
+- `tests/scene-evolution-check.js` advances the actual integrated scene model
+  with controlled sustained energy, captures real Canvas calls, and restores
+  instrumentation. All five engines rendered finite quiet/strong/released
+  scenes and passed seek-memory reset.
+  Strong expansion reached about 1.03496 versus quiet 1.0, density about 1.349,
+  persistence about 1.349, palette blending about 0.849 versus 0.15.
+  At the tested preset, Lissajous increased from 3 to 7 paths/frame. Actual
+  Canvas background fade decreased from about 0.14 to 0.08 at comparable frame
+  cadence, producing longer strong-scene trails; release returned near 0.14.
+  These are controlled artistic measurements, not listening judgments.
+- All five reduced-motion engines remained stationary across 13-14 completed
+  captured frames at intensity 2; no camera scale/rotation or artwork animation.
+- Controlled renderer checks at intensity 0.5, 1, and 2 were monotonic and finite
+  for all five engines with scene strength held constant; volume remained 0.8.
+- Pause/resume and previous/next playback passed across immersive and narrow
+  layouts. Seek resets passed in every engine.
+- Real Web Audio regression: 20/20 clicks, no missed/extra onsets, p95 latency
+  32 ms, estimated 120.02 BPM/confidence 0.899, and a silent tail.
+
+### Real reference passages and limitations
+
+Each user-selected reference track played for ten seconds after seeking to 30 s.
+These are short sampled passages, not identified build/release sections.
+
+| Reference | Observed artistic phases | Maximum smoothed scene energy |
+|---|---|---:|
+| D2_ The seed remains | quiet, building | 0.287 |
+| 10 - Rocks | quiet | 0.230 |
+| D1_ The Door closes | quiet, building | 0.300 |
+| Prayer Warriors | quiet | 0.239 |
+
+Every passage continued playing. Strong was not forced just because a song is
+percussive or labelled a build/release reference: the sustained measured energy
+must justify it. Normalization, mastering, volume, and passage length influence
+the heuristic. Exact song-section recognition and human perceived transitions
+remain unverified; the quiet/strong/release distinction is verified with
+controlled sustained energy and actual rendered output.
+
+Automatic evolution is sufficient for this initial implementation without
+adding a cue schema. Curated timestamps remain optional pending listening
+feedback and a scope decision.
+
+### Performance and deployment
+
+Approximately one-second samples per engine, immersive at intensity 2 with
+controlled maximum scene strength, desktop Chromium/DPR approximately 1.
+No Canvas stack-capture instrumentation during these performance samples.
+
+| Viewport | Mean FPS across engines | Synchronous draw p95 across engines |
+|---|---:|---:|
+| 1440 x 1100 | 59.01-60.00 | 0.50-1.40 ms |
+| 390 x 844 | 59.96-60.03 | 0.50-1.10 ms |
+
+These exclude GPU completion and independent audio-analysis cost; physical
+mobile/high-DPR, non-Chromium, long-session profiling, and human listening
+comfort remain unverified.
+
+- Static build and runtime byte equality passed; the new scene module is
+  deployed and development checks/tests are excluded.
+- Built-subpath shared Prayer Warriors playback continued in immersive mode;
+  `scene-evolution.js` loaded with HTTP 200 and no uncaught application errors.
+- Restored only verified timestamp changes in generated manifests; original
+  source hashes matched. No dependencies installed or commits created.
+- README documents behavior, thresholds, the circle fix, and browser helpers.
+- Returned owned test pages to blank, reset reduced-motion emulation, and
+  stopped the task-owned preview. Syntax and whitespace checks passed.
+- Phases 0-5 are complete as the planned implementation baseline; optional
+  curated cues and the documented human/device validation are follow-ups.

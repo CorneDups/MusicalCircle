@@ -295,6 +295,40 @@ Analysis cadence, pulse timing, event detection/counts, volume, presets, and
 terrain history are unchanged. Palette values are cached after theme updates.
 There is no quality settings panel.
 
+### Song-level visual evolution
+
+Automatic scene evolution follows sustained normalized energy, not authored
+timestamps or recognized song sections. Quiet, building, strong, and settling
+are artistic energy states, not claims about verses, choruses, or instrumentation.
+
+- Energy is smoothed with 1.5-second attack and 2.5-second release. A candidate
+  state needs two continuous seconds of evidence, with separate entry/exit
+  thresholds to avoid chatter.
+- Quiet enters building above 0.24; building enters strong above 0.36 or
+  settling below 0.16. Strong settles below 0.28. Settling returns to quiet
+  below 0.18 or building above 0.28. These are normalized-energy heuristics;
+  not every passage or song must reach strong.
+- Scene strength blends over 3-second attack / 4-second release rather than
+  jumping when the state changes. It controls decorative density (0.65-1.35),
+  trail persistence (0.75-1.35), and at most 3.5% additional expansion.
+  Lissajous trail count, circle petals, Tonnetz region opacity, and visible
+  shared sparks vary while detector events and harmonic meaning stay unchanged.
+- All engines slowly vary blending between the existing album accent colors.
+  No random palette selection, new flashes, or new playback settings are added.
+- Track changes, seeking, engine/view changes, and visibility/long-gap resets
+  clear scene memory. The destination passage is learned from fresh samples;
+  no skipped transitions are replayed. Unavailable/silent input cannot build.
+- Reduced motion bypasses all evolving geometry and palette effects, retaining
+  the stationary scene. Session intensity does not alter scene thresholds.
+
+Circle of Fifths now uses only its configured constant-direction rotation.
+Audio-driven camera angle offsets and asymmetric bass deformation no longer
+pull the wheel backward; its radial and brightness response remains. Other
+engines retain steady camera drift without multiplying elapsed time by treble.
+
+Automatic evolution is the completed baseline. Curated per-track cues remain
+an optional, separately scoped follow-up, not a requirement for deployment.
+
 ### Harmonic and pulse estimates
 
 Harmonic analysis uses interpolated spectral peaks from the 8192-point FFT,
@@ -391,6 +425,19 @@ The quality check injects slow-frame samples and restores full detail afterward;
 it does not prove naturally occurring pressure on a physical device. Both checks
 restore their instrumentation and are excluded from deployment.
 
+To check controlled quiet/strong/released scenes in the active normal-motion
+engine while playing:
+
+```javascript
+const { checkSceneRendering } = await import("./tests/scene-evolution-check.js");
+await checkSceneRendering();
+```
+
+This advances the integrated scene model with synthetic sustained energy,
+captures actual Canvas expansion/trails/fading, and verifies a 50% seek clears
+scene memory. It intentionally seeks the current track and restores all
+instrumentation afterward. It is not a perceptual listening or performance test.
+
 ## 6. Preview locally
 
 Node.js is required to regenerate the music manifest.
@@ -471,6 +518,7 @@ circular-music-player/
 ├── visual-effects.js        # shared musical effects and response bounds
 ├── musical-features.js      # harmonic/pulse estimates, lattice and terrain helpers
 ├── visual-comfort.js        # control visibility and sustained quality thresholds
+├── scene-evolution.js       # slow energy states and bounded artistic scene controls
 ├── songs.js                 # generated
 ├── songs.json               # generated
 ├── package.json
@@ -481,6 +529,8 @@ circular-music-player/
 │   ├── musical-features-check.js
 │   ├── visual-comfort.test.js
 │   ├── visual-comfort-check.js
+│   ├── scene-evolution.test.js
+│   ├── scene-evolution-check.js
 │   ├── web-audio-check.js
 │   └── visual-response-check.js
 ├── music/

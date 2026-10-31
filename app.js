@@ -5,6 +5,7 @@ import {
   normalizePreset, normalizeVisualizerConfig
 } from "./musical-features.js";
 import { AdaptiveQuality, controlsCanHide, CONTROLS_IDLE_MS } from "./visual-comfort.js";
+import { SceneEvolution } from "./scene-evolution.js";
 
 (() => {
   "use strict";
@@ -108,6 +109,7 @@ import { AdaptiveQuality, controlsCanHide, CONTROLS_IDLE_MS } from "./visual-com
     previousScroll: 0,
     quality: new AdaptiveQuality(),
     effects: new VisualEffects(),
+    scene: new SceneEvolution(),
     centreRadius: 0,
     colors: { accent: "#8ebcff", secondary: "#c18cff" },
     animationFrame: null,
@@ -991,6 +993,7 @@ import { AdaptiveQuality, controlsCanHide, CONTROLS_IDLE_MS } from "./visual-com
     state.terrain.reset();
     state.lattice = null;
     state.effects.reset();
+    state.scene.reset();
     centrePlayer.style.setProperty("--artwork-scale", "1.015");
     state.lastFrameTime = null;
     state.lastAnalysisTime = null;
@@ -1041,6 +1044,7 @@ import { AdaptiveQuality, controlsCanHide, CONTROLS_IDLE_MS } from "./visual-com
       if (visualStyleBadge.textContent !== label) visualStyleBadge.textContent = label;
     }
     state.effects.update(state.visualizerMetrics, seconds, motionPreference.matches);
+    state.scene.update(state.visualizerMetrics, seconds);
     const artworkScale = 1.015 + responseAmplitude(state.effects.artwork, state.album.visualizerIntensity) * 0.04;
     centrePlayer.style.setProperty("--artwork-scale", String(artworkScale));
   }
@@ -1108,7 +1112,8 @@ import { AdaptiveQuality, controlsCanHide, CONTROLS_IDLE_MS } from "./visual-com
       ctx.stroke();
     }
     ctx.fillStyle = secondary;
-    const visibleSparks = Math.ceil(effects.sparks.length * state.quality.decorationScale);
+    const visibleSparks = Math.ceil(effects.sparks.length * state.quality.decorationScale
+      * Math.min(1, state.scene.density));
     for (const spark of effects.sparks.slice(0, visibleSparks)) {
       const progress = spark.age / spark.life;
       const strength = responseAmplitude(spark.strength, intensity);
@@ -1322,7 +1327,7 @@ import { AdaptiveQuality, controlsCanHide, CONTROLS_IDLE_MS } from "./visual-com
 
     for (const point of positions) {
       const inside = 0.48 + Math.min(1, point.energy) * 0.16;
-      ctx.globalAlpha = Math.min(0.3, point.energy * preset.petalAlpha);
+      ctx.globalAlpha = Math.min(0.3, point.energy * preset.petalAlpha * state.scene.density);
       ctx.beginPath();
       ctx.moveTo(cx + Math.cos(point.angle - 0.13) * radius * inside, cy + Math.sin(point.angle - 0.13) * radius * inside);
       ctx.quadraticCurveTo(point.x, point.y, cx + Math.cos(point.angle + 0.13) * radius * inside,
@@ -1363,7 +1368,7 @@ import { AdaptiveQuality, controlsCanHide, CONTROLS_IDLE_MS } from "./visual-com
   function drawLissajous(ctx, values, cx, cy, size, time, preset) {
     const ratioX = preset.ratioX;
     const ratioY = preset.ratioY;
-    const trails = Math.max(1, Math.round(preset.trailCount * state.quality.decorationScale));
+    const trails = Math.max(1, Math.round(preset.trailCount * state.quality.decorationScale * state.scene.density));
     const scale = size * preset.scale;
     const energy = responseAmplitude(state.visualizerMetrics.energy, state.album.visualizerIntensity);
     const modulation = 0.72 + energy * 0.65;
@@ -1409,7 +1414,8 @@ import { AdaptiveQuality, controlsCanHide, CONTROLS_IDLE_MS } from "./visual-com
     ctx.lineWidth = Math.max(0.7, size * 0.0012);
     for (const cell of state.lattice.cells) {
       const energy = Math.min(...cell.map(index => nodes[index].energy));
-      ctx.globalAlpha = responseAmplitude(energy, state.album.visualizerIntensity) * preset.regionAlpha;
+      ctx.globalAlpha = Math.min(1, responseAmplitude(energy, state.album.visualizerIntensity)
+        * preset.regionAlpha * state.scene.density);
       ctx.beginPath();
       cell.forEach((index, corner) => corner ? ctx.lineTo(nodes[index].x, nodes[index].y) : ctx.moveTo(nodes[index].x, nodes[index].y));
       ctx.closePath();
@@ -1484,7 +1490,7 @@ import { AdaptiveQuality, controlsCanHide, CONTROLS_IDLE_MS } from "./visual-com
       const baseline = cy + size * 0.27 - depthIndex * size * preset.depth;
       const palette = ctx.createLinearGradient(cx - halfWidth * perspective, 0, cx + halfWidth * perspective, 0);
       palette.addColorStop(0, state.colors.accent);
-      palette.addColorStop(Math.max(0.01, 1 - preset.paletteMix * 0.8), state.colors.accent);
+      palette.addColorStop(Math.max(0.01, 1 - preset.paletteMix * state.scene.paletteMix * 0.8), state.colors.accent);
       palette.addColorStop(1, preset.paletteMix > 0 ? state.colors.secondary : state.colors.accent);
       ctx.strokeStyle = palette;
       ctx.fillStyle = palette;
@@ -1623,22 +1629,27 @@ import { AdaptiveQuality, controlsCanHide, CONTROLS_IDLE_MS } from "./visual-com
       const intensity = state.album.visualizerIntensity;
       const beat = responseAmplitude(state.visualizerMetrics.beat, intensity);
       const energy = responseAmplitude(state.effects.energy, intensity);
-      const treble = state.visualizerMetrics.treble;
       visualizerContext.save();
       visualizerContext.globalCompositeOperation = "source-over";
-      visualizerContext.fillStyle = `rgba(7, 10, 18, ${frameFade(audio.paused ? 0.2 : 0.105, seconds)})`;
+      visualizerContext.fillStyle = `rgba(7, 10, 18, ${frameFade(audio.paused ? 0.2 : 0.105 / state.scene.persistence, seconds)})`;
       visualizerContext.fillRect(0, 0, width, height);
       visualizerContext.translate(cx, cy);
-      visualizerContext.rotate((sceneTime * 0.000025 * (0.6 + treble)) + beat * 0.012);
-      visualizerContext.scale(1 + beat * 0.025 + energy * 0.006, 1 + beat * 0.025 + energy * 0.006);
+      if (state.album.visualizer !== "circle-of-fifths") visualizerContext.rotate(sceneTime * 0.000015);
+      const expansion = state.scene.expansion * (1 + beat * 0.025 + energy * 0.006);
+      visualizerContext.scale(expansion, expansion);
       visualizerContext.translate(-cx, -cy);
-      visualizerContext.strokeStyle = accent;
-      visualizerContext.fillStyle = accent;
+      const palette = visualizerContext.createLinearGradient(0, 0, width, height);
+      palette.addColorStop(0, accent);
+      palette.addColorStop(1 - state.scene.paletteMix * 0.7, accent);
+      palette.addColorStop(1, state.colors.secondary);
+      visualizerContext.strokeStyle = palette;
+      visualizerContext.fillStyle = palette;
       const preset = currentVisualizerPreset();
       visualizerContext.save();
       const bassShape = responseAmplitude(state.effects.bass, state.album.visualizerIntensity);
       visualizerContext.translate(cx, cy);
-      visualizerContext.scale(1 + bassShape * 0.015, 1 - bassShape * 0.01);
+      visualizerContext.scale(1 + bassShape * 0.015,
+        state.album.visualizer === "circle-of-fifths" ? 1 + bassShape * 0.015 : 1 - bassShape * 0.01);
       visualizerContext.translate(-cx, -cy);
 
       const renderers = {

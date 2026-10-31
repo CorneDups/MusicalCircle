@@ -41,6 +41,22 @@
       </div>
     </section>
 
+    <section class="experience-controls" aria-label="Visual experience">
+      <label for="visualizerSelect">Visualizer
+        <select id="visualizerSelect">
+          <option value="circle-of-fifths">Circle of Fifths</option>
+          <option value="lissajous">Harmonic Lissajous</option>
+          <option value="tonnetz">Tonnetz lattice</option>
+          <option value="polyrhythm">Polyrhythm wheels</option>
+          <option value="spectral-terrain">Spectral terrain</option>
+        </select>
+      </label>
+      <label for="intensity">Intensity <output id="intensityValue" for="intensity">1.00</output>
+        <input id="intensity" type="range" min="0.5" max="2" step="0.01" value="1">
+      </label>
+      <button id="immersiveButton" type="button" aria-pressed="false">Enter immersive view</button>
+    </section>
+
     <section class="player-stage" aria-label="Circular song player">
       <div id="musicCircle" class="music-circle" aria-live="polite">
         <canvas id="visualizerCanvas" class="visualizer-canvas" aria-hidden="true"></canvas>
@@ -71,6 +87,7 @@
         <div id="songButtons" class="song-buttons" aria-label="Songs"></div>
       </div>
     </section>
+    <div id="mobileSongList" class="mobile-song-list"></div>
 
     <section class="timeline-panel" aria-label="Playback timeline">
       <span id="currentTime">0:00</span>

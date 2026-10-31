@@ -1,5 +1,10 @@
 import { AudioAnalysis, SampleClock, MAX_FRAME_GAP, frameFade, envelope } from "./audio-analysis.js";
 import { VisualEffects, responseAmplitude, waveformOffset, WAVE_LIFETIME } from "./visual-effects.js";
+import {
+  HarmonicAnalysis, TempoTracker, TerrainHistory, tonnetzGeometry,
+  normalizePreset, normalizeVisualizerConfig
+} from "./musical-features.js";
+import { AdaptiveQuality, controlsCanHide, CONTROLS_IDLE_MS } from "./visual-comfort.js";
 
 (() => {
   "use strict";
@@ -37,6 +42,12 @@ import { VisualEffects, responseAmplitude, waveformOffset, WAVE_LIFETIME } from 
   const visualizerCanvas = document.querySelector("#visualizerCanvas");
   const visualizerContext = visualizerCanvas.getContext("2d");
   const motionPreference = window.matchMedia("(prefers-reduced-motion: reduce)");
+  const visualizerSelect = document.querySelector("#visualizerSelect");
+  const intensityControl = document.querySelector("#intensity");
+  const intensityValue = document.querySelector("#intensityValue");
+  const immersiveButton = document.querySelector("#immersiveButton");
+  const mobileSongList = document.querySelector("#mobileSongList");
+  const libraryControls = document.querySelector(".library-controls");
   const VISUALIZER_IDS = [
     "circle-of-fifths",
     "lissajous",
@@ -82,6 +93,9 @@ import { VisualEffects, responseAmplitude, waveformOffset, WAVE_LIFETIME } from 
     frequencyData: null,
     spectrumData: null,
     waveformData: null,
+    harmonicSpectrum: new Float32Array(4096).fill(-Infinity),
+    harmonics: new HarmonicAnalysis(),
+    tempo: new TempoTracker(),
     analysis: new AudioAnalysis(48000, 2048),
     analysisError: "",
     lastFrameTime: null,
@@ -89,17 +103,26 @@ import { VisualEffects, responseAmplitude, waveformOffset, WAVE_LIFETIME } from 
     analysisTimer: null,
     visualizerTime: 0,
     frameSeconds: 0,
+    immersive: false,
+    controlsTimer: null,
+    previousScroll: 0,
+    quality: new AdaptiveQuality(),
     effects: new VisualEffects(),
     centreRadius: 0,
     colors: { accent: "#8ebcff", secondary: "#c18cff" },
     animationFrame: null,
     harmonicClock: new SampleClock(),
-    terrainClock: new SampleClock(),
     displayData: new Float32Array(4096),
     idleData: new Uint8Array(4096),
     visualizerConfigs: {},
-    terrainHistory: [],
+    terrain: new TerrainHistory(),
+    lattice: null,
     visualizerMetrics: {
+      available: false,
+      silent: true,
+      rms: 0,
+      gain: 1,
+      onset: false,
       bass: 0,
       mids: 0,
       treble: 0,
@@ -672,8 +695,10 @@ import { VisualEffects, responseAmplitude, waveformOffset, WAVE_LIFETIME } from 
   }
 
   function updateAlbumPresentation(folder) {
-    state.album = folder.album;
-    state.terrainHistory = [];
+    state.album = { ...folder.album };
+    visualizerSelect.value = state.album.visualizer;
+    intensityControl.value = String(state.album.visualizerIntensity);
+    intensityValue.value = state.album.visualizerIntensity.toFixed(2);
     applyAlbumTheme(state.album);
     albumTitle.textContent = state.album.title;
     albumArtist.textContent = state.album.artist || "Independent collection";
@@ -682,6 +707,65 @@ import { VisualEffects, responseAmplitude, waveformOffset, WAVE_LIFETIME } from 
     setAlbumCover(state.album.cover, state.album.title);
     setBackdrop(state.album.background || state.album.cover);
   }
+
+  function refreshSongLayout() {
+    const compact = window.innerWidth <= 700 && !state.immersive;
+    const host = compact ? mobileSongList : musicCircle;
+    if (songButtonsContainer.parentElement !== host) host.append(songButtonsContainer);
+    mobileSongList.hidden = !compact;
+    resizeVisualizer();
+  }
+
+  function revealControls() {
+    document.body.classList.remove("controls-idle");
+    window.clearTimeout(state.controlsTimer);
+    state.controlsTimer = null;
+    if (!state.immersive) return;
+    state.controlsTimer = window.setTimeout(() => {
+      const focused = document.activeElement !== document.body && document.activeElement !== document.documentElement;
+      if (controlsCanHide(state.immersive, focused, !songLinkFallback.hidden)) {
+        document.body.classList.add("controls-idle");
+      }
+    }, CONTROLS_IDLE_MS);
+  }
+
+  function setImmersive(enabled) {
+    state.immersive = enabled;
+    if (enabled) state.previousScroll = window.scrollY;
+    document.body.classList.toggle("immersive", enabled);
+    immersiveButton.setAttribute("aria-pressed", String(enabled));
+    immersiveButton.textContent = enabled ? "Exit immersive view" : "Enter immersive view";
+    libraryControls.inert = enabled;
+    document.querySelector(".site-header").inert = enabled;
+    songButtonsContainer.inert = enabled;
+    refreshSongLayout();
+    resetVisualizer();
+    revealControls();
+    immersiveButton.focus({ preventScroll: true });
+    if (!enabled) window.scrollTo(0, state.previousScroll);
+    setStatus(enabled ? "Immersive view. Press Escape or use Exit immersive view to return." : "Returned to library view.");
+  }
+
+  immersiveButton.addEventListener("click", () => setImmersive(!state.immersive));
+  document.addEventListener("pointermove", revealControls);
+  document.addEventListener("pointerdown", revealControls);
+  document.addEventListener("focusin", revealControls);
+  document.addEventListener("focusout", () => {
+    if (state.immersive) revealControls();
+  });
+  visualizerSelect.addEventListener("change", () => {
+    state.album.visualizer = visualizerSelect.value;
+    state.album.visualizerPreset = state.album.visualizer === state.folders[state.selectedFolderIndex]?.album.visualizer
+      ? state.folders[state.selectedFolderIndex].album.visualizerPreset
+      : state.visualizerConfigs[state.album.visualizer]?.defaultPreset || "default";
+    visualStyleBadge.textContent = visualizerName(state.album.visualizer);
+    resetVisualizer();
+    setStatus(`Session visualizer: ${visualizerName(state.album.visualizer)}.`);
+  });
+  intensityControl.addEventListener("input", () => {
+    state.album.visualizerIntensity = Number(intensityControl.value);
+    intensityValue.value = state.album.visualizerIntensity.toFixed(2);
+  });
 
   function chooseFolder(index, announce = true) {
     if (state.folders.length === 0) return;
@@ -731,6 +815,7 @@ import { VisualEffects, responseAmplitude, waveformOffset, WAVE_LIFETIME } from 
         state.spectrumData = new Float32Array(analyser.frequencyBinCount);
         state.waveformData = new Float32Array(analyser.fftSize);
         state.frequencyData = new Uint8Array(harmonicAnalyser.frequencyBinCount);
+        state.harmonics = new HarmonicAnalysis(state.audioContext.sampleRate, harmonicAnalyser.fftSize);
         resetVisualizer();
       }
       state.analysisError = "";
@@ -900,12 +985,16 @@ import { VisualEffects, responseAmplitude, waveformOffset, WAVE_LIFETIME } from 
     state.frequencyData?.fill(0);
     state.waveformData?.fill(0);
     state.harmonicClock.reset();
-    state.terrainClock.reset();
-    state.terrainHistory = [];
+    state.harmonicSpectrum.fill(-Infinity);
+    state.harmonics.reset();
+    state.tempo.reset();
+    state.terrain.reset();
+    state.lattice = null;
     state.effects.reset();
     centrePlayer.style.setProperty("--artwork-scale", "1.015");
     state.lastFrameTime = null;
     state.lastAnalysisTime = null;
+    state.quality.resetTiming();
     visualizerContext.clearRect(0, 0, state.visualizerWidth, state.visualizerHeight);
   }
 
@@ -926,6 +1015,8 @@ import { VisualEffects, responseAmplitude, waveformOffset, WAVE_LIFETIME } from 
       state.analyser.getFloatTimeDomainData(state.waveformData);
       if (state.harmonicClock.advance(seconds, 0.05) || !state.visualizerMetrics.available) {
         state.harmonicAnalyser.getByteFrequencyData(state.frequencyData);
+        state.harmonicAnalyser.getFloatFrequencyData(state.harmonicSpectrum);
+        state.harmonics.analyse(state.harmonicSpectrum);
       }
     } else {
       state.harmonicClock.reset();
@@ -933,6 +1024,22 @@ import { VisualEffects, responseAmplitude, waveformOffset, WAVE_LIFETIME } from 
       state.waveformData?.fill(0);
     }
     state.visualizerMetrics = state.analysis.update(state.spectrumData, state.waveformData, seconds, available);
+    const measured = available && !state.visualizerMetrics.silent;
+    state.harmonics.update(seconds, measured);
+    // Silent gaps between short beats must not erase a learned pulse.
+    state.tempo.update(audio.currentTime, state.visualizerMetrics.onset, available && !audio.muted && audio.volume > 0);
+    if (state.album.visualizer === "spectral-terrain") {
+      state.terrain.update(state.harmonicSpectrum, state.audioContext?.sampleRate || 48000, 8192,
+        state.visualizerMetrics, seconds, currentVisualizerPreset());
+    }
+    if (state.album.visualizer === "polyrhythm") {
+      const timed = available && !audio.muted && audio.volume > 0
+        && state.tempo.beats(audio.currentTime, currentVisualizerPreset().tempoConfidence) !== null;
+      const label = timed
+        ? `Polyrhythm wheels · pulse estimate ${Math.round(60 / state.tempo.period)} BPM`
+        : "Polyrhythm wheels · artistic cycles";
+      if (visualStyleBadge.textContent !== label) visualStyleBadge.textContent = label;
+    }
     state.effects.update(state.visualizerMetrics, seconds, motionPreference.matches);
     const artworkScale = 1.015 + responseAmplitude(state.effects.artwork, state.album.visualizerIntensity) * 0.04;
     centrePlayer.style.setProperty("--artwork-scale", String(artworkScale));
@@ -1001,7 +1108,8 @@ import { VisualEffects, responseAmplitude, waveformOffset, WAVE_LIFETIME } from 
       ctx.stroke();
     }
     ctx.fillStyle = secondary;
-    for (const spark of effects.sparks) {
+    const visibleSparks = Math.ceil(effects.sparks.length * state.quality.decorationScale);
+    for (const spark of effects.sparks.slice(0, visibleSparks)) {
       const progress = spark.age / spark.life;
       const strength = responseAmplitude(spark.strength, intensity);
       const angle = spark.angle + spark.drift * spark.age;
@@ -1173,36 +1281,18 @@ import { VisualEffects, responseAmplitude, waveformOffset, WAVE_LIFETIME } from 
     return presets[state.album.visualizerPreset]
       || presets[config.defaultPreset]
       || presets.default
-      || {};
-  }
-
-  function pitchClassEnergy(values) {
-    const chroma = new Array(12).fill(0);
-    const counts = new Array(12).fill(0);
-    const sampleRate = state.audioContext?.sampleRate || 44100;
-    const fftSize = state.harmonicAnalyser?.fftSize || values.length * 2;
-
-    for (let bin = 1; bin < values.length * 0.75; bin += 1) {
-      const frequency = (bin * sampleRate) / fftSize;
-      if (frequency < 55) continue;
-      const midi = Math.round(69 + 12 * Math.log2(frequency / 440));
-      const pitchClass = ((midi % 12) + 12) % 12;
-      chroma[pitchClass] += Math.pow(values[bin] / 255, 1.35);
-      counts[pitchClass] += 1;
-    }
-
-    return chroma.map((value, index) => counts[index] ? Math.min(1, value / counts[index] * 3.2) : 0);
+      || normalizePreset(state.album.visualizer);
   }
 
   function drawCircleOfFifths(ctx, values, cx, cy, size, time, preset) {
     const labels = ["C", "G", "D", "A", "E", "B", "F♯", "D♭", "A♭", "E♭", "B♭", "F"];
     const fifths = [0, 7, 2, 9, 4, 11, 6, 1, 8, 3, 10, 5];
-    const chroma = pitchClassEnergy(values);
-    const radius = size * (preset.radius || 0.34);
-    const rotation = time * (preset.rotationSpeed || 0) - Math.PI / 2;
+    const { chroma, confidence } = state.harmonics;
+    const radius = size * preset.radius;
+    const rotation = time * preset.rotationSpeed - Math.PI / 2;
     const positions = fifths.map((pitchClass, index) => {
       const angle = rotation + index * Math.PI * 2 / 12;
-      const energy = responseAmplitude(chroma[pitchClass], state.album.visualizerIntensity);
+      const energy = responseAmplitude(chroma[pitchClass] * confidence, state.album.visualizerIntensity);
       return {
         x: cx + Math.cos(angle) * radius * (1 + energy * 0.08),
         y: cy + Math.sin(angle) * radius * (1 + energy * 0.08),
@@ -1211,7 +1301,7 @@ import { VisualEffects, responseAmplitude, waveformOffset, WAVE_LIFETIME } from 
       };
     });
 
-    ctx.globalAlpha = preset.polygonAlpha || 0.45;
+    ctx.globalAlpha = preset.polygonAlpha;
     ctx.lineWidth = Math.max(1, size * 0.0025);
     ctx.beginPath();
     positions.forEach((point, index) => index ? ctx.lineTo(point.x, point.y) : ctx.moveTo(point.x, point.y));
@@ -1230,6 +1320,31 @@ import { VisualEffects, responseAmplitude, waveformOffset, WAVE_LIFETIME } from 
       ctx.stroke();
     }
 
+    for (const point of positions) {
+      const inside = 0.48 + Math.min(1, point.energy) * 0.16;
+      ctx.globalAlpha = Math.min(0.3, point.energy * preset.petalAlpha);
+      ctx.beginPath();
+      ctx.moveTo(cx + Math.cos(point.angle - 0.13) * radius * inside, cy + Math.sin(point.angle - 0.13) * radius * inside);
+      ctx.quadraticCurveTo(point.x, point.y, cx + Math.cos(point.angle + 0.13) * radius * inside,
+        cy + Math.sin(point.angle + 0.13) * radius * inside);
+      ctx.quadraticCurveTo(cx, cy, cx + Math.cos(point.angle - 0.13) * radius * inside,
+        cy + Math.sin(point.angle - 0.13) * radius * inside);
+      ctx.fill();
+    }
+    if (confidence >= 0.35) {
+      const strong = positions.filter(point => point.energy / state.album.visualizerIntensity >= preset.connectionThreshold)
+        .sort((a, b) => b.energy - a.energy).slice(0, 5);
+      for (let first = 0; first < strong.length; first += 1) {
+        for (let second = first + 1; second < strong.length; second += 1) {
+          ctx.globalAlpha = Math.min(0.35, Math.min(strong[first].energy, strong[second].energy) * 0.2);
+          ctx.beginPath();
+          ctx.moveTo(strong[first].x, strong[first].y);
+          ctx.quadraticCurveTo(cx, cy, strong[second].x, strong[second].y);
+          ctx.stroke();
+        }
+      }
+    }
+
     positions.forEach((point, index) => {
       ctx.globalAlpha = Math.min(1, 0.35 + point.energy * 0.65);
       ctx.beginPath();
@@ -1246,24 +1361,29 @@ import { VisualEffects, responseAmplitude, waveformOffset, WAVE_LIFETIME } from 
   }
 
   function drawLissajous(ctx, values, cx, cy, size, time, preset) {
-    const ratioX = Math.max(1, preset.ratioX || 3);
-    const ratioY = Math.max(1, preset.ratioY || 2);
-    const trails = Math.max(1, preset.trailCount || 3);
-    const scale = size * (preset.scale || 0.34);
+    const ratioX = preset.ratioX;
+    const ratioY = preset.ratioY;
+    const trails = Math.max(1, Math.round(preset.trailCount * state.quality.decorationScale));
+    const scale = size * preset.scale;
     const energy = responseAmplitude(state.visualizerMetrics.energy, state.album.visualizerIntensity);
     const modulation = 0.72 + energy * 0.65;
 
     for (let trail = trails - 1; trail >= 0; trail -= 1) {
-      const phase = time * (preset.phaseSpeed || 0.0004) + trail * 0.12;
+      const onset = motionPreference.matches ? 0 : responseAmplitude(state.visualizerMetrics.beat, state.album.visualizerIntensity);
+      const phase = time * preset.phaseSpeed + trail * 0.12 + onset * preset.onsetAmount;
       ctx.globalAlpha = Math.min(1, (0.12 + energy * 0.5) * (1 - trail / (trails + 1)));
-      ctx.lineWidth = Math.max(0.8, (preset.lineWidth || 1.5) + (trails - trail) * 0.16);
+      ctx.lineWidth = Math.max(0.8, preset.lineWidth + (trails - trail) * 0.16);
       ctx.beginPath();
       for (let index = 0; index <= 240; index += 1) {
         const angle = index / 240 * Math.PI * 2;
         const binValue = responseAmplitude(values[Math.floor(index / 241 * values.length * 0.7)] / 255,
           state.album.visualizerIntensity);
-        const x = cx + Math.sin(angle * ratioX + phase) * scale * modulation;
-        const y = cy + Math.sin(angle * ratioY) * scale * (0.82 + binValue * 0.32);
+        const waveform = state.visualizerMetrics.available && !state.visualizerMetrics.silent && !motionPreference.matches
+          ? state.waveformData[Math.floor(index / 241 * state.waveformData.length)] : 0;
+        const displacement = waveformOffset(waveform, state.visualizerMetrics.gain, state.album.visualizerIntensity,
+          index / 240) * size * (preset.waveformAmount / 0.018);
+        const x = cx + Math.sin(angle * ratioX + phase) * scale * modulation + Math.cos(angle) * displacement;
+        const y = cy + Math.sin(angle * ratioY) * scale * (0.82 + binValue * 0.32) + Math.sin(angle) * displacement;
         index ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
       }
       ctx.closePath();
@@ -1272,49 +1392,46 @@ import { VisualEffects, responseAmplitude, waveformOffset, WAVE_LIFETIME } from 
   }
 
   function drawTonnetz(ctx, values, cx, cy, size, time, preset) {
-    const chroma = pitchClassEnergy(values);
-    const columns = Math.max(3, preset.columns || 9);
-    const rows = Math.max(3, preset.rows || 9);
-    const spacing = size * (preset.spacing || 0.09);
-    const rotation = time * (preset.driftSpeed || 0);
-    const nodes = [];
-
-    for (let row = 0; row < rows; row += 1) {
-      for (let column = 0; column < columns; column += 1) {
-        const pitchClass = ((column * 7 + row * 4) % 12 + 12) % 12;
-        const localX = (column - (columns - 1) / 2 + (row % 2) * 0.5) * spacing;
-        const localY = (row - (rows - 1) / 2) * spacing * 0.866;
-        nodes.push({
-          x: cx + localX * Math.cos(rotation) - localY * Math.sin(rotation),
-          y: cy + localX * Math.sin(rotation) + localY * Math.cos(rotation),
-          pitchClass,
-          energy: chroma[pitchClass]
-        });
-      }
+    const { chroma, confidence } = state.harmonics;
+    const key = `${preset.columns}:${preset.rows}`;
+    if (state.lattice?.key !== key) {
+      const geometry = tonnetzGeometry(preset.columns, preset.rows);
+      state.lattice = { key, ...geometry, pathways: new Float32Array(geometry.edges.length) };
     }
+    const spacing = size * preset.spacing;
+    const rotation = time * preset.driftSpeed;
+    const nodes = state.lattice.nodes.map(node => ({
+      x: cx + (node.x * Math.cos(rotation) - node.y * Math.sin(rotation)) * spacing,
+      y: cy + (node.x * Math.sin(rotation) + node.y * Math.cos(rotation)) * spacing,
+      energy: chroma[node.pitchClass] * confidence
+    }));
 
     ctx.lineWidth = Math.max(0.7, size * 0.0012);
-    for (let index = 0; index < nodes.length; index += 1) {
-      const column = index % columns;
-      const neighbors = [index + 1, index + columns, index + columns + (Math.floor(index / columns) % 2 ? 1 : -1)];
-      neighbors.forEach((neighborIndex) => {
-        if (column === columns - 1 || !nodes[neighborIndex]) return;
-        const neighbor = nodes[neighborIndex];
-        ctx.globalAlpha = Math.min(1, 0.06
-          + responseAmplitude(Math.max(nodes[index].energy, neighbor.energy), state.album.visualizerIntensity) * 0.42);
-        ctx.beginPath();
-        ctx.moveTo(nodes[index].x, nodes[index].y);
-        ctx.lineTo(neighbor.x, neighbor.y);
-        ctx.stroke();
-      });
+    for (const cell of state.lattice.cells) {
+      const energy = Math.min(...cell.map(index => nodes[index].energy));
+      ctx.globalAlpha = responseAmplitude(energy, state.album.visualizerIntensity) * preset.regionAlpha;
+      ctx.beginPath();
+      cell.forEach((index, corner) => corner ? ctx.lineTo(nodes[index].x, nodes[index].y) : ctx.moveTo(nodes[index].x, nodes[index].y));
+      ctx.closePath();
+      ctx.fill();
     }
+    state.lattice.edges.forEach(([first, second], index) => {
+      const target = confidence >= 0.35 ? Math.min(nodes[first].energy, nodes[second].energy) : 0;
+      state.lattice.pathways[index] = envelope(state.lattice.pathways[index], target, state.frameSeconds, 0.15, 1.2);
+      ctx.globalAlpha = Math.min(0.65, 0.04
+        + responseAmplitude(state.lattice.pathways[index], state.album.visualizerIntensity) * preset.pathwayAlpha);
+      ctx.beginPath();
+      ctx.moveTo(nodes[first].x, nodes[first].y);
+      ctx.lineTo(nodes[second].x, nodes[second].y);
+      ctx.stroke();
+    });
 
     nodes.forEach((node) => {
-      const active = node.energy >= (preset.activeThreshold || 0.25);
+      const active = confidence >= 0.35 && node.energy >= preset.activeThreshold;
       const response = responseAmplitude(node.energy, state.album.visualizerIntensity);
       ctx.globalAlpha = active ? Math.min(1, 0.45 + response * 0.55) : 0.12;
       ctx.beginPath();
-      ctx.arc(node.x, node.y, (preset.nodeSize || 2.8) + response * 5, 0, Math.PI * 2);
+      ctx.arc(node.x, node.y, preset.nodeSize + response * 5, 0, Math.PI * 2);
       ctx.fill();
     });
   }
@@ -1324,13 +1441,12 @@ import { VisualEffects, responseAmplitude, waveformOffset, WAVE_LIFETIME } from 
   }
 
   function drawPolyrhythm(ctx, values, cx, cy, size, time, preset) {
-    const meters = Array.isArray(preset.meters) ? preset.meters : [3, 4];
-    const pulses = Array.isArray(preset.pulses) ? preset.pulses : [2, 3];
-    const speed = preset.speed || 0.00035;
+    const meters = preset.meters;
+    const pulses = preset.pulses;
+    const speed = preset.speed;
     meters.forEach((meterValue, ring) => {
       const meter = Math.max(2, Math.round(meterValue));
-      const radius = size * (0.2 + ring * (preset.radiusStep || 0.07));
-      const playhead = Math.floor((time * Math.abs(speed) * meter) % meter);
+      const radius = size * (0.2 + ring * preset.radiusStep);
       const rotation = time * speed * (ring % 2 ? -1 : 1) - Math.PI / 2;
       ctx.globalAlpha = Math.min(1, 0.16
         + responseAmplitude(state.visualizerMetrics.mids, state.album.visualizerIntensity) * 0.35);
@@ -1340,17 +1456,16 @@ import { VisualEffects, responseAmplitude, waveformOffset, WAVE_LIFETIME } from 
 
       for (let step = 0; step < meter; step += 1) {
         const angle = rotation + step * Math.PI * 2 / meter;
-        const active = euclideanPulse(step, meter, Math.min(meter, pulses[ring] || 1));
-        const hit = step === playhead;
+        const active = euclideanPulse(step, meter, Math.min(meter, pulses[ring] ?? 1));
         const binValue = responseAmplitude(values[Math.floor((step / meter) * values.length * 0.65)] / 255,
           state.album.visualizerIntensity);
-        ctx.globalAlpha = hit ? 1 : active ? 0.58 : 0.18;
+        ctx.globalAlpha = active ? 0.58 : 0.18;
         ctx.beginPath();
         ctx.arc(
           cx + Math.cos(angle) * radius,
           cy + Math.sin(angle) * radius,
-          (preset.nodeSize || 3.2) + binValue * 4
-            + (hit ? responseAmplitude(state.visualizerMetrics.beat, state.album.visualizerIntensity) * 8 : 0),
+          preset.nodeSize + binValue * 4
+            + (active ? responseAmplitude(state.visualizerMetrics.beat, state.album.visualizerIntensity) * 5 : 0),
           0,
           Math.PI * 2
         );
@@ -1360,40 +1475,123 @@ import { VisualEffects, responseAmplitude, waveformOffset, WAVE_LIFETIME } from 
   }
 
   function drawSpectralTerrain(ctx, values, cx, cy, size, time, preset) {
-    const ridges = Math.max(4, preset.ridges || 24);
-    const bins = Math.max(12, preset.bins || 42);
-    const samples = state.terrainClock.advance(state.frameSeconds, Math.max(1, preset.sampleEvery || 3) / 60);
-    for (let sample = 0; sample < samples; sample += 1) {
-      const ridge = [];
-      for (let index = 0; index < bins; index += 1) {
-        const sourceIndex = Math.floor(Math.pow(index / (bins - 1), 1.5) * values.length * 0.72);
-        ridge.push(values[sourceIndex] / 255);
-      }
-      state.terrainHistory.unshift(ridge);
-      state.terrainHistory.length = Math.min(ridges, state.terrainHistory.length);
-    }
-
+    const ridges = preset.ridges;
+    const bins = preset.bins;
     const halfWidth = size * 0.38;
-    [...state.terrainHistory].reverse().forEach((ridge, reverseIndex) => {
-      const depthIndex = state.terrainHistory.length - 1 - reverseIndex;
+    [...state.terrain.ridges].reverse().forEach((ridge, reverseIndex) => {
+      const depthIndex = state.terrain.ridges.length - 1 - reverseIndex;
       const perspective = 0.42 + (1 - depthIndex / ridges) * 0.58;
-      const baseline = cy + size * 0.27 - depthIndex * size * (preset.depth || 0.015);
+      const baseline = cy + size * 0.27 - depthIndex * size * preset.depth;
+      const palette = ctx.createLinearGradient(cx - halfWidth * perspective, 0, cx + halfWidth * perspective, 0);
+      palette.addColorStop(0, state.colors.accent);
+      palette.addColorStop(Math.max(0.01, 1 - preset.paletteMix * 0.8), state.colors.accent);
+      palette.addColorStop(1, preset.paletteMix > 0 ? state.colors.secondary : state.colors.accent);
+      ctx.strokeStyle = palette;
+      ctx.fillStyle = palette;
       ctx.globalAlpha = 0.12 + perspective * 0.5;
       ctx.beginPath();
-      ridge.forEach((value, index) => {
+      ridge.levels.forEach((value, index) => {
         const x = cx + ((index / (bins - 1)) * 2 - 1) * halfWidth * perspective;
-        const y = baseline - responseAmplitude(value, state.album.visualizerIntensity)
-          * size * (preset.height || 0.2) * perspective;
+        const transient = motionPreference.matches ? 0 : ridge.onset * preset.transientHeight;
+        const y = baseline - (responseAmplitude(value, state.album.visualizerIntensity) * preset.height
+          + responseAmplitude(transient, state.album.visualizerIntensity) * Math.sin(index / (bins - 1) * Math.PI))
+          * size * perspective;
         index ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
       });
       ctx.stroke();
       ctx.lineTo(cx + halfWidth * perspective, baseline);
       ctx.lineTo(cx - halfWidth * perspective, baseline);
       ctx.closePath();
-      ctx.globalAlpha = preset.fillAlpha || 0.05;
+      ctx.globalAlpha = preset.fillAlpha * perspective * (0.65 + ridge.onset * 0.35);
       ctx.fill();
     });
     return time;
+  }
+
+  function drawSongPlayhead(ctx, cx, cy, size, preset) {
+    const beats = state.tempo.beats(audio.currentTime, preset.tempoConfidence);
+    if (beats === null || motionPreference.matches) return;
+    ctx.save();
+    ctx.strokeStyle = state.colors.secondary;
+    ctx.fillStyle = state.colors.secondary;
+    preset.meters.forEach((meter, ring) => {
+      const radius = size * (0.2 + ring * preset.radiusStep);
+      const phase = ((beats % meter) + meter) % meter / meter;
+      const angle = -Math.PI / 2 + phase * Math.PI * 2;
+      ctx.globalAlpha = 0.28;
+      ctx.lineWidth = Math.max(1, size * 0.0015);
+      ctx.beginPath();
+      ctx.arc(cx, cy, radius, -Math.PI / 2, angle);
+      ctx.stroke();
+      ctx.globalAlpha = 0.85;
+      ctx.beginPath();
+      ctx.arc(cx + Math.cos(angle) * radius, cy + Math.sin(angle) * radius,
+        size * 0.004 + responseAmplitude(state.visualizerMetrics.beat, state.album.visualizerIntensity) * 3, 0, Math.PI * 2);
+      ctx.fill();
+    });
+    ctx.restore();
+  }
+
+  function drawLowMotionScene(ctx, cx, cy, size, preset) {
+    ctx.save();
+    ctx.clearRect(0, 0, state.visualizerWidth, state.visualizerHeight);
+    ctx.strokeStyle = state.colors.accent;
+    ctx.fillStyle = state.colors.secondary;
+    ctx.lineWidth = Math.max(1, size * 0.002);
+    ctx.globalAlpha = 0.25 + Math.min(1, state.effects.energy) * 0.12;
+    const style = state.album.visualizer;
+    if (style === "circle-of-fifths" || style === "polyrhythm") {
+      const rings = style === "polyrhythm" ? preset.meters : [12];
+      rings.forEach((points, ring) => {
+        const radius = size * (style === "polyrhythm" ? 0.2 + ring * preset.radiusStep : preset.radius);
+        ctx.beginPath();
+        for (let index = 0; index <= points; index += 1) {
+          const angle = -Math.PI / 2 + index / points * Math.PI * 2;
+          const x = cx + Math.cos(angle) * radius;
+          const y = cy + Math.sin(angle) * radius;
+          index ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+        }
+        ctx.stroke();
+        for (let index = 0; index < points; index += 1) {
+          const angle = -Math.PI / 2 + index / points * Math.PI * 2;
+          ctx.beginPath();
+          ctx.arc(cx + Math.cos(angle) * radius, cy + Math.sin(angle) * radius, size * 0.004, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      });
+    } else if (style === "lissajous") {
+      ctx.beginPath();
+      for (let index = 0; index <= 240; index += 1) {
+        const angle = index / 240 * Math.PI * 2;
+        const x = cx + Math.sin(angle * preset.ratioX) * size * preset.scale * 0.8;
+        const y = cy + Math.sin(angle * preset.ratioY) * size * preset.scale * 0.8;
+        index ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+      }
+      ctx.stroke();
+    } else if (style === "tonnetz") {
+      const key = `${preset.columns}:${preset.rows}`;
+      if (state.lattice?.key !== key) state.lattice = { key, ...tonnetzGeometry(preset.columns, preset.rows) };
+      const geometry = state.lattice;
+      for (const [first, second] of geometry.edges) {
+        ctx.beginPath();
+        ctx.moveTo(cx + geometry.nodes[first].x * size * preset.spacing, cy + geometry.nodes[first].y * size * preset.spacing);
+        ctx.lineTo(cx + geometry.nodes[second].x * size * preset.spacing, cy + geometry.nodes[second].y * size * preset.spacing);
+        ctx.stroke();
+      }
+    } else {
+      for (let ridge = 0; ridge < Math.min(12, preset.ridges); ridge += 1) {
+        ctx.beginPath();
+        for (let index = 0; index < preset.bins; index += 1) {
+          const position = index / (preset.bins - 1);
+          const x = cx + (position * 2 - 1) * size * (0.35 - ridge * 0.012);
+          const y = cy + size * (0.28 - ridge * 0.023)
+            - Math.sin(position * Math.PI) ** 2 * size * preset.height * 0.45;
+          index ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+        }
+        ctx.stroke();
+      }
+    }
+    ctx.restore();
   }
 
   function drawVisualizer(time = 0) {
@@ -1411,10 +1609,16 @@ import { VisualEffects, responseAmplitude, waveformOffset, WAVE_LIFETIME } from 
     const sceneTime = state.visualizerTime;
     const width = state.visualizerWidth;
     const height = state.visualizerHeight;
+    const drawStarted = performance.now();
     if (width > 0 && height > 0) {
       const cx = width / 2;
       const cy = height / 2;
       const size = Math.min(width, height);
+      if (motionPreference.matches) {
+        drawLowMotionScene(visualizerContext, cx, cy, size, currentVisualizerPreset());
+        state.animationFrame = requestAnimationFrame(drawVisualizer);
+        return;
+      }
       const { accent } = state.colors;
       const intensity = state.album.visualizerIntensity;
       const beat = responseAmplitude(state.visualizerMetrics.beat, intensity);
@@ -1456,9 +1660,10 @@ import { VisualEffects, responseAmplitude, waveformOffset, WAVE_LIFETIME } from 
       visualizerContext.restore();
       visualizerContext.globalAlpha = 1;
       visualizerContext.restore();
+      if (state.album.visualizer === "polyrhythm") drawSongPlayhead(visualizerContext, cx, cy, size, preset);
       drawVisualizerAtmosphere(visualizerContext, cx, cy, size, sceneTime);
     }
-
+    state.quality.update(seconds, performance.now() - drawStarted);
     state.animationFrame = requestAnimationFrame(drawVisualizer);
   }
 
@@ -1469,8 +1674,7 @@ import { VisualEffects, responseAmplitude, waveformOffset, WAVE_LIFETIME } from 
   }
 
   motionPreference.addEventListener("change", () => {
-    state.effects.reset();
-    centrePlayer.style.setProperty("--artwork-scale", "1.015");
+    resetVisualizer();
   });
 
   document.addEventListener("visibilitychange", () => {
@@ -1584,6 +1788,12 @@ import { VisualEffects, responseAmplitude, waveformOffset, WAVE_LIFETIME } from 
   });
 
   document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && state.immersive) {
+      event.preventDefault();
+      setImmersive(false);
+      return;
+    }
+    if (state.immersive) revealControls();
     const tag = document.activeElement?.tagName;
     if (tag === "INPUT" || tag === "BUTTON" || tag === "SELECT") return;
 
@@ -1598,9 +1808,7 @@ import { VisualEffects, responseAmplitude, waveformOffset, WAVE_LIFETIME } from 
   });
 
   window.addEventListener("resize", () => {
-    renderSongs();
-    updateActiveButton();
-    resizeVisualizer();
+    refreshSongLayout();
   });
 
   if ("ResizeObserver" in window) {
@@ -1612,7 +1820,7 @@ import { VisualEffects, responseAmplitude, waveformOffset, WAVE_LIFETIME } from 
       try {
         const response = await fetch(`./visualizers/${visualizerId}.json`, { cache: "no-store" });
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        state.visualizerConfigs[visualizerId] = await response.json();
+        state.visualizerConfigs[visualizerId] = normalizeVisualizerConfig(visualizerId, await response.json());
       } catch (error) {
         console.warn(`Could not load ${visualizerId} presets:`, error);
       }
@@ -1633,6 +1841,7 @@ import { VisualEffects, responseAmplitude, waveformOffset, WAVE_LIFETIME } from 
     state.folders = normalizeManifest(source);
     audio.volume = Number(volume.value);
     renderFolderOptions();
+    refreshSongLayout();
 
     if (state.folders.length > 0) {
       chooseFolder(0, false);

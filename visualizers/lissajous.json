@@ -1,9 +1,9 @@
 {
   "defaultPreset": "perfect-fifth",
   "presets": {
-    "default": { "ratioX": 3, "ratioY": 2, "trailCount": 3, "phaseSpeed": 0.0004, "scale": 0.34, "lineWidth": 1.8 },
-    "perfect-fifth": { "ratioX": 3, "ratioY": 2, "trailCount": 5, "phaseSpeed": 0.00055, "scale": 0.36, "lineWidth": 1.5 },
-    "major-third": { "ratioX": 5, "ratioY": 4, "trailCount": 4, "phaseSpeed": -0.00035, "scale": 0.33, "lineWidth": 1.3 },
-    "octave": { "ratioX": 2, "ratioY": 1, "trailCount": 7, "phaseSpeed": 0.00025, "scale": 0.38, "lineWidth": 1.1 }
+    "default": { "ratioX": 3, "ratioY": 2, "trailCount": 3, "phaseSpeed": 0.0004, "scale": 0.34, "lineWidth": 1.8, "waveformAmount": 0.012, "onsetAmount": 0.06 },
+    "perfect-fifth": { "ratioX": 3, "ratioY": 2, "trailCount": 5, "phaseSpeed": 0.00055, "scale": 0.36, "lineWidth": 1.5, "waveformAmount": 0.01, "onsetAmount": 0.05 },
+    "major-third": { "ratioX": 5, "ratioY": 4, "trailCount": 4, "phaseSpeed": -0.00035, "scale": 0.33, "lineWidth": 1.3, "waveformAmount": 0.014, "onsetAmount": 0.07 },
+    "octave": { "ratioX": 2, "ratioY": 1, "trailCount": 7, "phaseSpeed": 0.00025, "scale": 0.38, "lineWidth": 1.1, "waveformAmount": 0.008, "onsetAmount": 0.04 }
   }
 }

@@ -171,13 +171,31 @@ The visualizer uses the browser's Web Audio API and responds to the real frequen
 
 Available patterns:
 
-- `circle-of-fifths`: pitch classes ordered by fifths become a rotating harmonic polygon;
-- `lissajous`: interval ratios such as 3:2 and 5:4 become stable, layered curves;
-- `tonnetz`: pitch-class energy illuminates a triangular harmonic lattice;
-- `polyrhythm`: concentric meter wheels show Euclidean pulses and cycle alignment;
-- `spectral-terrain`: frequency snapshots accumulate into a perspective sound landscape.
+- `circle-of-fifths`: smoothed pitch classes reshape a harmonic polygon,
+  translucent petals, and curved connections between strong classes;
+- `lissajous`: artistic ratios such as 3:2 and 5:4 form layered curves with
+  bounded waveform displacement and onset-phase modulation;
+- `tonnetz`: soft harmonic regions and fading pathways follow a verified
+  triangular lattice, with confidence-gated node activity;
+- `polyrhythm`: decorative Euclidean meter wheels support a separate,
+  confidence-gated, song-timed pulse cursor;
+- `spectral-terrain`: logarithmic frequency groups form a depth-shaded,
+  two-accent landscape with traveling onset ridges.
 
 Each engine reads named presets from its matching file in `visualizers/`. Edit those JSON values to tune geometry, density, motion, and response, or add another object under `presets` and select it with `visualizerPreset` in an album's `album.json`. The `defaultPreset` field controls the fallback variation for that engine.
+
+All existing preset names and fallback selection are retained. Missing new fields
+use compatible defaults. Invalid numeric fields produce a console warning and
+the engine uses its built-in fallback; explicit zero is supported where meaningful.
+New tuning fields are:
+
+| Engine | Fields (supported range) |
+|---|---|
+| Circle of fifths | `petalAlpha` (0-0.4), `connectionThreshold` (0-1) |
+| Lissajous | `waveformAmount` (0-0.025 of circle size), `onsetAmount` (0-0.12 radians) |
+| Tonnetz | `regionAlpha` (0-0.4), `pathwayAlpha` (0-0.6) |
+| Polyrhythm | `tempoConfidence` (0.7-1; cannot lower the safety gate) |
+| Spectral terrain | `transientHeight` (0-0.1 of circle size), `paletteMix` (0-1) |
 
 All patterns share one browser-local analysis pipeline:
 
@@ -197,6 +215,13 @@ frequency detail approximately every 50 ms. Attack/release smoothing, trail
 fading, and terrain sampling use elapsed time rather than frame counts.
 `sampleEvery` in terrain presets retains its existing meaning at a 60 Hz
 reference rate: `2` is a sampling interval of about 33 ms.
+
+Terrain frequency groups span 30 Hz to 16 kHz (or Nyquist). Group levels use
+linear spectral power and bounded normalization, not linearly spaced byte bins.
+History sampling runs with audio polling independently of drawing; onsets between
+history samples are retained for the next ridge. History stays within each
+preset's ridge limit. Pausing holds the landscape rather than inserting fake
+spectral history.
 
 Idle animation is decorative and never feeds the measured bands or onset
 detector. Pausing settles back into a slower idle scene; buffering, seeking, and
@@ -232,18 +257,74 @@ enlarging the entire idle curve.
 
 Shared effects are cleared on track changes, seeks, unavailable analysis, and
 visibility resets. Silence stops new emissions and lets finite effects expire.
-The reduced-motion preference disables the new waveform displacement, rings,
-sparks, bass deformation, and artwork pulse. Existing decorative Canvas motion
-still needs the full low-motion mode planned for Phase 4.
+The reduced-motion preference uses a stationary, simplified version of each
+engine with only restrained energy-driven opacity. It disables continuous
+camera/wheel motion, zoom, waveform displacement, rings, sparks, traveling
+terrain, the pulse cursor, and artwork animation. Intensity cannot bypass it.
 
-Onsets are not a detected tempo, and frequency bands do not separate instruments.
-Pitch-class highlights remain estimates, not reliable chord recognition.
-Lissajous ratios and polyrhythm patterns are preset-defined artistic geometry;
-rhythm wheels are not yet synchronized to an estimated song tempo.
+### Immersive listening and session controls
+
+Use **Enter immersive view** in the Visual experience panel to expand the scene
+toward the viewport without browser fullscreen. Album information and song
+choices are hidden only while immersive; playback continues.
+
+- **Exit immersive view** remains visible and keyboard-accessible.
+  Escape exits from any control, restores the browsing scroll position, and
+  returns focus to the toggle without trapping focus.
+- Playback and visual controls fade after three seconds without interaction
+  only when no control is focused. Pointer/touch activity and keyboard focus
+  reveal them. A manual song-link fallback also keeps controls visible.
+- Ordinary status messages remain available to screen readers in immersive
+  mode; errors remain visible.
+- The visualizer selector and 0.5-2 intensity slider are session-only overrides.
+  Switching engines uses that engine's default preset; switching back to the
+  album engine restores its configured preset. Album changes restore both
+  configured engine and intensity. Reloading also discards overrides.
+  They never modify album files, persist settings, or change volume.
+- At widths up to 700 px, song choices use a wrapping two-column grid below
+  the circle rather than clipped orbit buttons. Transport buttons and mobile
+  song choices have at least 44 px targets. Short landscape immersive layouts
+  keep the side controls clear of transport buttons.
+
+Rendering quality adapts only after sustained pressure: three seconds of frame
+intervals over 25 ms or synchronous drawing over 12 ms reduces decorative
+Lissajous trails and the number of drawn sparks. There are two reduced levels
+(70% and 40% decoration); ten healthy seconds per level restores detail.
+Isolated spikes and gaps over 100 ms do not trigger a quality change.
+Analysis cadence, pulse timing, event detection/counts, volume, presets, and
+terrain history are unchanged. Palette values are cached after theme updates.
+There is no quality settings panel.
+
+### Harmonic and pulse estimates
+
+Harmonic analysis uses interpolated spectral peaks from the 8192-point FFT,
+rejects low-level/unprominent peaks, and downweights plausible overtones only
+when a lower fundamental is present. Chroma smooths with 150 ms attack and
+650 ms release. Confidence combines tonal spectral power and pitch-class
+concentration; weak evidence produces subtle activity, not alleged chords.
+Tonnetz cells use actual equilateral neighbors, with fifth/third adjacency;
+pathways fade with a 1.2-second release.
+
+Pulse estimation uses a bounded 12-second/48-onset window, searches 60-180 BPM,
+requires at least six events spanning two seconds, and checks interval and
+phase consistency. A confident cursor uses media playback position and an
+estimated onset anchor, independently of decorative wheel/camera rotation.
+The badge explicitly distinguishes a **pulse estimate** from **artistic cycles**.
+Short silent gaps between beats retain timing; two seconds without an onset
+removes confidence and three seconds clears the event window.
+Pause, mute, buffering, seeking, track changes, and visibility resets require
+reacquisition. Low confidence leaves free-running artistic wheels with
+onset-driven accents, rather than forcing synchronization.
+
+These are estimates, not instrument separation, chord recognition, or reliable
+meter/downbeat detection. The first onset is only a timing anchor, not a known
+downbeat. Syncopation, missed events, tempo changes, and half/double-time ambiguity
+can prevent or mislead pulse estimation. Lissajous ratios and Euclidean meters
+remain preset-defined artistic geometry; this is not a stereo oscilloscope.
 
 ### Validate audio analysis and effects
 
-Run the dependency-free analysis and effects tests with:
+Run the dependency-free analysis, effects, geometry, comfort, and preset tests with:
 
 ```bash
 npm test
@@ -259,8 +340,28 @@ await checkWebAudio();
 
 The browser check uses muted synthetic tones and a 120 BPM click train, checks
 band separation, missed/extra onsets, silence, and a p95 detection-latency target
-of 80 ms. It closes its temporary AudioContext afterward. It is a local
+of 80 ms, and validates the pulse estimate. It closes its temporary AudioContext afterward. It is a local
 development test and is not included in the deployed site.
+
+For real FFT harmonic checks with muted bass/triad/noise fixtures:
+
+```javascript
+const { checkHarmonics } = await import("./tests/musical-features-check.js");
+await checkHarmonics();
+```
+
+For an integrated pulse-cursor regression check, start a song using the
+`polyrhythm` engine with its `default` preset and nonzero volume:
+
+```javascript
+const { checkPlayerPulse } = await import("./tests/musical-features-check.js");
+await checkPlayerPulse();
+```
+
+This approximately eleven-second check briefly replaces playback with an audible,
+locally generated click fixture. It verifies tempo, cursor phase, and separation
+from decorative rotation, then restores the original source/position and removes
+its instrumentation. No library recording is uploaded.
 
 For a controlled geometry check while a song is playing:
 
@@ -269,11 +370,26 @@ const { captureVisualResponse } = await import("./tests/visual-response-check.js
 await captureVisualResponse();
 ```
 
-This development-only helper temporarily supplies fixed audio metrics, measures
+This development-only helper temporarily supplies fixed audio/chroma metrics and spectra, measures
 the active renderer's response, and restores its instrumentation afterward.
 It throws on invalid captured geometry. Compare results for the same engine,
-preset, and viewport after setting album intensity to 0.5, 1, and 2 and refreshing.
+preset, and viewport using the session intensity slider at 0.5, 1, and 2.
 Do not use this instrumented check for performance measurements.
+
+For a stationary-geometry check with the browser's reduced-motion emulation
+enabled, or a controlled decoration-reduction check using normal-motion
+Lissajous while playing:
+
+```javascript
+const { checkLowMotion, checkAdaptiveRendering } = await import("./tests/visual-comfort-check.js");
+await checkLowMotion(); // Reduced motion must be enabled.
+// Alternatively, disable reduced motion and select Lissajous:
+await checkAdaptiveRendering();
+```
+
+The quality check injects slow-frame samples and restores full detail afterward;
+it does not prove naturally occurring pressure on a physical device. Both checks
+restore their instrumentation and are excluded from deployment.
 
 ## 6. Preview locally
 
@@ -353,12 +469,18 @@ circular-music-player/
 ├── app.js
 ├── audio-analysis.js        # shared analysis and elapsed-time helpers
 ├── visual-effects.js        # shared musical effects and response bounds
+├── musical-features.js      # harmonic/pulse estimates, lattice and terrain helpers
+├── visual-comfort.js        # control visibility and sustained quality thresholds
 ├── songs.js                 # generated
 ├── songs.json               # generated
 ├── package.json
 ├── tests/
 │   ├── audio-analysis.test.js
 │   ├── visual-effects.test.js
+│   ├── musical-features.test.js
+│   ├── musical-features-check.js
+│   ├── visual-comfort.test.js
+│   ├── visual-comfort-check.js
 │   ├── web-audio-check.js
 │   └── visual-response-check.js
 ├── music/

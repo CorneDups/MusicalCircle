@@ -1,4 +1,5 @@
 import { AudioAnalysis } from "../audio-analysis.js";
+import { TempoTracker } from "../musical-features.js";
 
 // Run locally in a browser; Node has no native Web Audio implementation.
 export async function checkWebAudio(sampleIntervalMs = 16) {
@@ -63,6 +64,7 @@ export async function checkWebAudio(sampleIntervalMs = 16) {
       source.start(references[i]);
     }
     const events = [];
+    const tempo = new TempoTracker();
     let previous = context.currentTime;
     while (context.currentTime < references.at(-1) + 1) {
       await new Promise(resolve => setTimeout(resolve, sampleIntervalMs));
@@ -70,6 +72,7 @@ export async function checkWebAudio(sampleIntervalMs = 16) {
       analyser.getFloatTimeDomainData(waveform);
       const time = context.currentTime;
       if (analysis.update(spectrum, waveform, time - previous).onset) events.push(time);
+      tempo.update(time, analysis.metrics.onset, true);
       previous = time;
     }
     const latencies = [];
@@ -90,10 +93,14 @@ export async function checkWebAudio(sampleIntervalMs = 16) {
     if (analysis.metrics.onset || !analysis.metrics.silent) {
       throw new Error("The silent tail did not settle.");
     }
+    if (tempo.beats(context.currentTime) === null || Math.abs(60 / tempo.period - 120) > 2) {
+      throw new Error("Click train did not acquire a confident 120 BPM pulse estimate.");
+    }
     return {
       sampleRate: context.sampleRate, sampleIntervalMs, bandResults,
       expectedClicks: references.length, detectedEvents: events.length,
-      missed, extras, latencyP95Ms, silentTail: analysis.metrics.silent
+      missed, extras, latencyP95Ms, silentTail: analysis.metrics.silent,
+      estimatedBpm: 60 / tempo.period, tempoConfidence: tempo.confidence
     };
   } finally {
     await context.close();

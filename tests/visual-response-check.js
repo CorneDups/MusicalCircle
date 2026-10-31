@@ -1,4 +1,5 @@
 import { AudioAnalysis } from "../audio-analysis.js";
+import { HarmonicAnalysis } from "../musical-features.js";
 
 export async function captureVisualResponse() {
   const audio = document.querySelector("#audioPlayer");
@@ -6,7 +7,9 @@ export async function captureVisualResponse() {
   if (audio.paused) throw new Error("Start a song before checking renderer response.");
   const originalUpdate = AudioAnalysis.prototype.update;
   const originalFrequency = AnalyserNode.prototype.getByteFrequencyData;
-  const methods = ["arc", "moveTo", "lineTo"];
+  const originalFloatFrequency = AnalyserNode.prototype.getFloatFrequencyData;
+  const originalHarmonicUpdate = HarmonicAnalysis.prototype.update;
+  const methods = ["arc", "moveTo", "lineTo", "quadraticCurveTo"];
   const originals = new Map();
   const records = {};
   const metrics = {
@@ -24,20 +27,32 @@ export async function captureVisualResponse() {
     AnalyserNode.prototype.getByteFrequencyData = function (values) {
       values.fill(128);
     };
+    AnalyserNode.prototype.getFloatFrequencyData = function (values) {
+      values.fill(-50);
+    };
+    HarmonicAnalysis.prototype.update = function () {
+      this.chroma.fill(0.4);
+      this.confidence = 1;
+    };
     await new Promise(resolve => setTimeout(resolve, 200));
     for (const method of methods) {
       originals.set(method, CanvasRenderingContext2D.prototype[method]);
       CanvasRenderingContext2D.prototype[method] = function (...args) {
         if (this.canvas === canvas) {
-          if (args.slice(0, method === "arc" ? 5 : 2).some(value => !Number.isFinite(value))) {
+          if (args.slice(0, method === "arc" ? 5 : method === "quadraticCurveTo" ? 4 : 2)
+            .some(value => !Number.isFinite(value))) {
             throw new Error("Non-finite renderer geometry.");
           }
           if (method === "arc" && args[2] < 0) throw new Error("Negative renderer radius.");
           const stack = new Error().stack;
           const engine = engines.find(name => stack.includes(name));
           if (engine) {
-            records[engine] ||= { arcs: [], moves: [], lines: [] };
-            records[engine][method === "arc" ? "arcs" : method === "moveTo" ? "moves" : "lines"].push(args.slice(0, 3));
+            records[engine] ||= { arcs: [], moves: [], lines: [], paths: [] };
+            if (method !== "quadraticCurveTo") {
+              records[engine][method === "arc" ? "arcs" : method === "moveTo" ? "moves" : "lines"].push(args.slice(0, 3));
+            }
+            if (method === "moveTo") records[engine].paths.push([args.slice(0, 2)]);
+            if (method === "lineTo") records[engine].paths.at(-1)?.push(args.slice(0, 2));
           }
         }
         return originals.get(method).apply(this, args);
@@ -54,7 +69,7 @@ export async function captureVisualResponse() {
       const xs = record.lines.map(point => point[0]);
       amplitude = Math.max(...xs) - Math.min(...xs);
     } else if (engine === "drawSpectralTerrain") {
-      amplitude = size * 0.77 - record.moves.at(-1)[1];
+      amplitude = size * 0.77 - Math.min(...record.paths.at(-1).map(point => point[1]));
     } else {
       amplitude = Math.max(...record.arcs.filter(point => point[2] < size * 0.1).map(point => point[2]));
     }
@@ -68,6 +83,8 @@ export async function captureVisualResponse() {
   } finally {
     AudioAnalysis.prototype.update = originalUpdate;
     AnalyserNode.prototype.getByteFrequencyData = originalFrequency;
+    AnalyserNode.prototype.getFloatFrequencyData = originalFloatFrequency;
+    HarmonicAnalysis.prototype.update = originalHarmonicUpdate;
     for (const [method, original] of originals) CanvasRenderingContext2D.prototype[method] = original;
   }
 }

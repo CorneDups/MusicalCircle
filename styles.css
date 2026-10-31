@@ -321,7 +321,7 @@ select {
   z-index: 5;
   top: 50%;
   left: 50%;
-  width: clamp(165px, 30%, 232px);
+  width: clamp(190px, 30%, 232px);
   aspect-ratio: 1;
   overflow: hidden;
   text-align: center;
@@ -432,15 +432,15 @@ select {
 }
 
 .transport-button {
-  width: 1.95rem;
-  height: 1.95rem;
+  width: 44px;
+  height: 44px;
   font-size: 0.76rem;
   background: rgba(5, 9, 17, 0.57);
 }
 
 .play-button {
-  width: 2.65rem;
-  height: 2.65rem;
+  width: 48px;
+  height: 48px;
   padding-left: 0.14rem;
   color: #07101f;
   border-color: var(--accent);
@@ -695,8 +695,8 @@ input[type="range"] {
   }
 
   .centre-player {
-    width: 31.5%;
-    min-width: 126px;
+    width: 190px;
+    min-width: 190px;
   }
 
   .centre-content {
@@ -717,13 +717,13 @@ input[type="range"] {
   }
 
   .transport-button {
-    width: 1.65rem;
-    height: 1.65rem;
+    width: 44px;
+    height: 44px;
   }
 
   .play-button {
-    width: 2.2rem;
-    height: 2.2rem;
+    width: 48px;
+    height: 48px;
   }
 
   .song-button {
@@ -735,10 +735,244 @@ input[type="range"] {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .motion-rotate.is-playing .artwork-disc {
+    animation: none;
+  }
   .motion-pulse .artwork-disc {
     transform: scale(1.015);
   }
 
+}
+
+.experience-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+  width: min(780px, 100%);
+  margin: 1rem auto 0;
+  padding: 0.8rem 1rem;
+  border: 1px solid var(--line);
+  border-radius: 0.85rem;
+  background: var(--panel-strong);
+}
+
+.experience-controls label {
+  flex: 1;
+  min-width: 160px;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.experience-controls select {
+  margin-top: 0.3rem;
+}
+
+.experience-controls output {
+  float: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#immersiveButton {
+  min-height: 44px;
+  padding: 0.65rem 0.9rem;
+  border: 1px solid var(--accent);
+  border-radius: 0.7rem;
+  background: var(--panel-strong);
+  cursor: pointer;
+}
+
+input[type="range"] {
+  min-height: 44px;
+}
+
+.song-link-button,
+.autoplay-control {
+  min-height: 44px;
+}
+
+.mobile-song-list {
+  width: min(660px, 100%);
+  margin: 1.5rem auto 0;
+}
+
+.mobile-song-list[hidden] {
+  display: none;
+}
+
+.mobile-song-list .song-buttons {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.6rem;
+}
+
+.mobile-song-list .song-button {
+  position: static;
+  width: 100%;
+  min-height: 44px;
+  padding: 0.6rem;
+  font-size: 0.8rem;
+  line-height: 1.3;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  transform: none;
+}
+
+.mobile-song-list .empty-state {
+  position: static;
+  width: 100%;
+  grid-column: 1 / -1;
+  transform: none;
+}
+
+body.immersive {
+  overflow: hidden;
+}
+
+.immersive .app-shell {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  padding: 0;
+}
+
+.immersive .site-header,
+.immersive .library-controls,
+.immersive .song-buttons,
+.immersive .mobile-song-list {
+  display: none;
+}
+
+.immersive .player-stage {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  display: grid;
+  place-items: center;
+}
+
+.immersive .music-circle {
+  width: min(96vw, calc(100dvh - 70px));
+  max-width: none;
+}
+
+.immersive .centre-player {
+  width: clamp(190px, 24%, 232px);
+}
+
+.immersive .experience-controls {
+  position: fixed;
+  z-index: 20;
+  top: max(0.6rem, env(safe-area-inset-top));
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(780px, calc(100% - 1.2rem));
+  margin: 0;
+}
+
+.immersive .timeline-panel {
+  position: fixed;
+  z-index: 20;
+  bottom: calc(78px + env(safe-area-inset-bottom));
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(780px, calc(100% - 2rem));
+  padding: 0.4rem 0.7rem;
+  border-radius: 0.8rem;
+  background: var(--panel-strong);
+}
+
+.immersive .secondary-controls {
+  position: fixed;
+  z-index: 20;
+  bottom: max(0.5rem, env(safe-area-inset-bottom));
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(780px, calc(100% - 1.2rem));
+  margin: 0;
+  gap: 0.5rem;
+  padding: 0.4rem 0.7rem;
+}
+
+.immersive .status-message {
+  position: fixed;
+  z-index: 21;
+  left: 1rem;
+  bottom: 135px;
+  max-width: calc(100% - 2rem);
+  background: var(--panel-strong);
+  pointer-events: none;
+}
+
+.immersive .status-message:not(.error) {
+  width: 1px;
+  height: 1px;
+  min-height: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+
+.immersive .song-link-fallback:not([hidden]) {
+  position: fixed;
+  z-index: 25;
+  top: 160px;
+  left: 5%;
+  width: 90%;
+  padding: 1rem;
+  background: var(--panel-strong);
+}
+
+.immersive .experience-controls label,
+.immersive .timeline-panel,
+.immersive .secondary-controls,
+.immersive .transport-controls,
+.immersive .status-message {
+  transition: opacity 250ms ease;
+}
+
+.controls-idle .experience-controls label,
+.controls-idle .timeline-panel,
+.controls-idle .secondary-controls,
+.controls-idle .transport-controls,
+.controls-idle .status-message:not(.error) {
+  opacity: 0;
+  pointer-events: none;
+}
+
+@media (max-width: 700px) {
+  .immersive .experience-controls {
+    gap: 0.5rem;
+  }
+
+  .immersive .experience-controls label {
+    min-width: 0;
+  }
+
+  .immersive #immersiveButton {
+    flex-basis: 100%;
+  }
+
+  .immersive .secondary-controls {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+  }
+
+  .immersive .volume-control {
+    grid-column: 1 / -1;
+  }
+
+  .immersive .timeline-panel {
+    bottom: calc(145px + env(safe-area-inset-bottom));
+  }
+
+  .immersive .status-message {
+    bottom: 205px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
   *,
   *::before,
   *::after {
@@ -746,5 +980,53 @@ input[type="range"] {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+}
+
+@media (max-height: 550px) and (min-width: 500px) {
+  .immersive .experience-controls {
+    flex-wrap: nowrap;
+    gap: 0.5rem;
+  }
+
+  .immersive .experience-controls label {
+    min-width: 0;
+  }
+
+  .immersive #immersiveButton {
+    flex-basis: auto;
+  }
+
+  .immersive .secondary-controls {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    top: 110px;
+    bottom: auto;
+    left: 0.6rem;
+    width: min(190px, calc((100vw - 210px) / 2));
+    transform: none;
+  }
+
+  .immersive .volume-control {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
+
+  .immersive .timeline-panel {
+    left: auto;
+    right: 0.6rem;
+    bottom: 0.6rem;
+    width: min(250px, calc((100vw - 210px) / 2));
+    grid-template-columns: 2.5rem minmax(0, 1fr) 2.5rem;
+    gap: 0.3rem;
+    transform: none;
+  }
+
+  .immersive .status-message {
+    bottom: 65px;
+    left: auto;
+    right: 0.6rem;
+    max-width: min(250px, calc((100vw - 210px) / 2));
   }
 }

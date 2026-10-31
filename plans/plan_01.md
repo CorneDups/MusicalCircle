@@ -8,9 +8,9 @@ motion, and visual memory, rather than watching an animation alongside playback.
 The first priority is accurate, responsive musical mapping. More effects and a
 different rendering technology are not substitutes for synchronization.
 
-This document is an execution plan, not a record of implemented changes.
-The baseline findings come from source review; listening and browser validation
-must establish the perceptual baseline before implementation.
+This document contains the execution plan and validation records for completed
+phases. The original baseline findings came from source review; the execution
+records distinguish browser measurements from unverified human perception.
 
 ### Intended experience
 
@@ -221,7 +221,11 @@ intensity 0.5, 1, and 2 produces ordered, bounded responses in every engine.
 
 **Dependencies:** Phases 1 and 2. Harmonic improvements precede harmonic visuals.
 
-**Affected surfaces:** `app.js`, relevant files under `visualizers`, and README.
+**Status:** Implemented on 2026-10-31. See Section 13 for feature tests, browser
+measurements, intentional behavior changes, and remaining listening checks.
+
+**Affected surfaces:** `app.js`, `musical-features.js`, focused tests, the static
+build copy list, files under `visualizers`, and README.
 
 #### Circle of fifths
 
@@ -275,6 +279,8 @@ intensity 0.5, 1, and 2 produces ordered, bounded responses in every engine.
 pitch and rhythm limitations are documented; renderer-specific tests pass.
 
 ### Phase 4: Add immersive listening and comfort controls
+
+**Status:** Implemented and validated; see Section 14 for results and limitations.
 
 **Dependencies:** Phase 2; Phase 3 can be delivered separately.
 
@@ -979,3 +985,260 @@ completion. These short runs are not long-session or physical mobile profiling.
   and high-DPR testing, non-Chromium compatibility, and long-session resource
   profiling remain unverified. Detector latency is not perceived audiovisual
   latency. No full-screen flashes or framework migration were introduced.
+
+## 13. Phase 3 execution record
+
+### Musical features and engine changes
+
+- Added [musical-features.js](../musical-features.js) with dependency-free
+  harmonic analysis, pulse estimation, lattice geometry, logarithmic terrain
+  history, and preset validation. It is explicitly included in the static build.
+  The existing media source, audible destination route, and analyser sizes remain.
+- Harmonic analysis now reads float dB data from the 8192-point analyser at the
+  existing approximately 50 ms cadence. It searches 55-6000 Hz for prominent
+  peaks, rejects peaks below -72 dB or more than 30 dB below the maximum,
+  requires 8 dB prominence, and interpolates peak position before pitch mapping.
+- Downweights plausible harmonics only when a lower spectral fundamental is
+  present. Uses a bounded 64-peak set and derives confidence from tonal power
+  and pitch-class concentration. Chroma uses 150 ms attack / 650 ms release;
+  confidence uses 200 ms attack / 500 ms release. Idle decoration never enters
+  harmonic estimates.
+- Circle of Fifths keeps its ordered polygon, mirrors, and optional labels.
+  Smoothed confidence-weighted activity deforms nodes and translucent petals.
+  Curved connections link at most five strong classes, gated by confidence.
+  No estimated chord names are presented.
+- Lissajous keeps every artistic ratio and layered trail preset. A tapered,
+  normalized waveform offset adds bounded local displacement; the shared onset
+  envelope adds bounded phase modulation. Both new movements are suppressed
+  by reduced motion, and both have explicit-zero tuning controls.
+- Tonnetz now uses cached equilateral lattice topology with verified neighbors
+  and major/minor-third/fifth adjacency. This corrects the old row-boundary
+  neighbor logic and pitch assignment on staggered rows. Filled cells follow
+  real triangle edges; confidence-weighted regions remain soft and pathways
+  fade with a 1.2-second release. Weak evidence does not light alleged chords.
+- Pulse estimation searches 60-180 BPM from a 12-second/48-onset window,
+  requiring at least six onsets spanning two seconds. It checks interval
+  consistency, tolerates skipped multiples, refines the period, and checks
+  anchor-phase alignment. Confidence must reach at least 0.7.
+- Polyrhythm wheel rotation and Euclidean patterns remain artistic decoration.
+  A separate pulse cursor is drawn outside camera/engine transforms and uses
+  media playback position plus the estimated onset anchor. The style badge
+  explicitly labels pulse estimation versus artistic cycles. Low-confidence
+  mode uses onset accents without pretending the wheels are song-synchronized.
+- Short silent gaps between percussive events preserve timing. Two seconds
+  without an onset removes confidence; three seconds clears the event window.
+  Pause, mute, unavailable analysis, seek/song/album changes, and visibility
+  resets require reacquisition. The first onset is not treated as a downbeat.
+- Terrain uses true logarithmic 30-16000 Hz groups bounded by actual Nyquist,
+  spectral power, and capped normalization. Audio polling owns fixed-time
+  history sampling, independently of render rate. Pending onsets survive until
+  the next history sample and become traveling ridges. History remains within
+  preset ridge limits; long gaps clear it rather than creating catch-up bursts.
+- Added frequency-dependent album-accent gradients and restrained depth/fill
+  shading. Pausing now holds the landscape rather than adding fake idle spectra.
+  This and the corrected Tonnetz topology are intentional behavior changes.
+- Preserved all five engine IDs, all 18 existing preset names, `defaultPreset`,
+  and fallback selection. Added compatible new-field defaults, finite/range/
+  integer validation, explicit-zero support, and repository-standard warnings
+  for invalid configurations. No new UI controls or external dependencies.
+
+### Automated and real-audio validation
+
+- `npm test`: all 28 tests passed, including 11 new musical-feature tests.
+  Tests cover A bass with overtones and a C/E/G triad at 44.1/48 kHz,
+  low-level/flat noise/silence rejection, time-based harmonic smoothing,
+  90/120/150 BPM acquisition, missed/sparse/irregular events, reset/drought
+  behavior, equilateral edges/cells without wrapping, actual Nyquist-aware
+  logarithmic groups, onset retention/expiry, 30/60/144 Hz terrain cadence,
+  all shipped presets, numeric rejection, and meaningful zero.
+- Real Web Audio harmonic fixtures at 48 kHz identified A bass with overtones
+  (confidence 0.840) and the C/E/G triad (0.686). Seeded broadband noise remained
+  low-confidence (0.032). Fixtures were muted and their context was closed.
+- Re-ran the real Web Audio click check: 20/20 events, no missed/extra clicks,
+  p95 detector latency 30.67 ms, and a silent tail. The new pulse estimate was
+  119.98 BPM at confidence 0.872.
+- Integrated player fixture: 20/20 events through the actual media element
+  and source graph, estimated 119.75 BPM, confidence 0.909, and 958 cursor arcs.
+  Every captured cursor angle matched media position/anchor phase (maximum
+  captured angle error zero) and none inherited decorative rotation.
+- The integrated fixture initially revealed that RMS silence between short
+  clicks erased timing on every beat. Fixed the availability-versus-silence
+  gate, not the onset thresholds or required confidence. This regression is
+  retained in [checkPlayerPulse](../tests/musical-features-check.js).
+- All 18 presets rendered with finite captured geometry at intensity 2.
+  All five default engines also passed high-intensity geometry/control hit
+  tests at a 390 px viewport. Browser-only manifest overrides selected presets;
+  no query-string override API was shipped.
+- Controlled harmonic injection exercised Tonnetz region/pathway drawing and
+  continuing pathway strokes after activity ended. Geometry tests separately
+  verified that every shaded cell uses actual adjacent edges.
+- Rechecked ordered intensity response at 0.5/1/2 in every engine; playback
+  volume stayed 0.8. Captured default-preset responses included:
+
+| Response | Intensity 0.5 | Intensity 1 | Intensity 2 |
+|---|---:|---:|---:|
+| Circle node radius, px | 4.554 | 6.608 | 10.716 |
+| Lissajous horizontal span, px | 386.77 | 530.77 | 674.90 |
+| Tonnetz node radius, px | 3.8 | 4.8 | 6.8 |
+| Polyrhythm node radius, px | 5.502 | 7.505 | 11.514 |
+| Newest terrain ridge maximum displacement, px | 9.727 | 19.454 | 38.908 |
+
+Terrain instrumentation now measures the newest ridge's maximum height rather
+than its first group: a low-frequency logarithmic group can legitimately have
+no FFT bin. Harmonic instrumentation supplies controlled chroma/confidence.
+These measurements are not comparable to the old nearest-bin/terrain mappings
+and do not constitute perceived musical synchronization.
+
+### Playback and reference passages
+
+- Passed pause/resume, mute, timeline seek, previous/next, autoplay next,
+  album switching, and link copying. Pause/mute cleared pulse confidence.
+  Seeking to 50% reached approximately 0.50018 of duration while playing.
+- Controlled confident timing drew 18 cursor arcs in a short normal-motion
+  sample and zero in reduced motion. The low-motion Canvas overhaul remains
+  Phase 4; this verifies suppression of the new cursor only.
+- All four reference songs played after seeking to 30 s. Six-second samples
+  produced varying harmonic confidence (approximately 0.24-0.72 at sample end).
+  Sparse/irregular onset sequences did not force timing confidence: Prayer
+  Warriors remained explicitly in artistic-cycle mode in that passage.
+  This is the intended fallback, not evidence that the song has no tempo.
+- Native playback with Web Audio deliberately unavailable still advanced and
+  displayed the existing reactive-visuals error, with no uncaught error.
+- Built-site shared-link playback passed under `/_site/index.html` and loaded
+  the new runtime module from that subpath.
+
+### Short-run performance
+
+Normal drawing without geometry stack capture; approximately 1.5-second samples
+at 1440 x 1100 and 390 x 844, same desktop Chromium environment, DPR about 1.
+
+| Engine | Desktop mean FPS | Desktop draw p95, ms | Narrow-screen mean FPS | Narrow-screen draw p95, ms |
+|---|---:|---:|---:|---:|
+| Circle of Fifths | 60.00 | 1.40 | 59.32 | 1.30 |
+| Lissajous | 60.00 | 1.20 | 59.99 | 0.80 |
+| Tonnetz | 58.67 | 1.00 | 60.00 | 0.90 |
+| Polyrhythm | 59.99 | 0.50 | 60.00 | 0.60 |
+| Spectral terrain | 59.98 | 1.00 | 60.01 | 0.90 |
+
+These measure synchronous drawing and frame cadence, not GPU completion or
+independent analysis cost. They are not long-session or physical mobile tests.
+
+### Build, cleanup, and limitations
+
+- JavaScript syntax checks, Git whitespace checks, and the static build passed.
+  Copied runtime bytes matched source and development tests were excluded.
+- Restored only verified generated timestamp changes and confirmed the original
+  source manifest hashes. No dependencies were installed or commits created.
+- Returned owned test pages to blank and stopped the task-owned preview.
+- Pitch confidence is a heuristic, not a chord/instrument classifier. Bass
+  resolution, overtones, tuning, dense mixes, and noise can mislead estimates.
+  Pulse estimation retains half/double-time, syncopation, and tempo-change
+  limitations; it does not identify meter or downbeats.
+- Lissajous remains artistic geometry, not a stereo scope. Full low-motion,
+  immersive/session controls, and mobile song-button clipping/touch-target
+  fixes remain Phase 4; song-level evolution remains Phase 5.
+- Human listening/perceived alignment, physical mobile/high-DPR and
+  non-Chromium testing, exact build/release transitions, and long-session
+  resource profiling remain unverified.
+
+## 14. Phase 4 execution record
+
+### Delivered behavior
+
+- Added opt-in immersive view without the fullscreen API. The scene occupies
+  the viewport while album/library/song choices are hidden and inert.
+  Exit remains visible; Escape exits even from an input/select, restores
+  scroll and toggle focus, and does not interrupt playback.
+- The HUD fades after three idle seconds only when nothing is focused and no
+  manual link fallback is open. Pointer/touch and keyboard activity reveal it.
+  Entry focuses Exit, so it intentionally stays visible until focus moves away.
+  Non-error status remains accessible but visually clipped in immersive mode;
+  errors stay visible and do not intercept pointer input.
+- Added session-only engine and intensity controls (0.5-2, 0.01 steps).
+  The selected album is cloned, not mutated in the source manifest. New engines
+  use default presets; returning to the album engine restores its preset.
+  Album changes/reload restore configured settings; intensity never changes
+  playback volume.
+- Narrow browsing now places the existing song buttons in a two-column,
+  title-wrapping grid below the scene at widths up to 700 px. Transport and
+  mobile song choices have at least 44 px targets. Desktop orbit remains.
+  Reparenting preserves existing buttons/listeners; resize no longer rebuilds
+  them and loses focus.
+- System reduced motion draws stationary identities for all five engines.
+  Only a restrained bounded global opacity responds to energy. Camera motion,
+  zoom, terrain travel, pulse cursor, bursts, waveform displacement, and artwork
+  rotation/pulse are absent, including at intensity 2.
+- Reused the cached palette. Added bounded adaptive decoration levels
+  (100%, 70%, 40%), reducing only drawn sparks and Lissajous trails.
+  Three sustained slow seconds (>25 ms frame interval or >12 ms draw cost)
+  degrade one level; ten sustained healthy seconds (<=20 ms interval and
+  <8 ms draw cost) recover one. Isolated spikes and gaps >100 ms reset counters.
+  Detector, harmonic/pulse cadence, event emission, terrain history, and volume
+  are unchanged. No new settings panel or dependencies.
+
+### Automated and real-browser validation
+
+- `npm test`: **32/32 passing**, including four new comfort-policy tests.
+- Reduced-motion Canvas capture: all five engines produced stationary geometry
+  across 13 completed frames each at intensity 2, with no camera scale/rotation
+  and no artwork animation. Normal motion is intentionally richer.
+- Controlled quality integration reduced actual Lissajous trail paths from
+  75 to 30 across comparable 250 ms samples at level 2, retaining volume 0.8.
+  This injects slow samples into the actual quality model; it does not claim
+  naturally sustained hardware pressure.
+- Focused timeline stayed visible beyond three seconds; blurring into the
+  scene allowed hiding. Tab and pointer activity revealed the HUD; permanent
+  exit remained visible. Space activated the immersive toggle; Escape restored
+  browsing/toggle focus and playback. Checked scroll restoration: 12 -> 12 px.
+- Actual denied clipboard access showed the manual copy input and a logged
+  warning. After scene interaction and 3.2 seconds, the fallback remained
+  visible and controls did not hide.
+- Source settings were unchanged by overrides; album change and reload restored
+  defaults and normal mode.
+- Final hit tests passed for exit, all three transport buttons, progress,
+  volume, visualizer, and intensity at 320 x 568, 390 x 844, 568 x 320,
+  844 x 390, and 1440 x 1100. The 26-song mobile grid stayed horizontally
+  contained and every button was at least 44 px tall.
+- Corrected two issues discovered through browser testing: misplaced CSS media
+  nesting that hid normal immersive rules, and short-viewport control/status
+  overlap. Side HUD and accessible status clipping passed the final matrix.
+- Pause/resume, previous/next, autoplay advance, and seeking passed; 50% seek
+  reached approximately 0.50020 of duration. Playback continued across
+  immersive changes. Shared-link and built-subpath checks are recorded below.
+- Real Web Audio regression: 20/20 click onsets, no missed/extra events,
+  p95 latency 29.33 ms, estimated 119.88 BPM/confidence 0.888, silent tail.
+
+### Short-run rendering measurements
+
+Actual first-album playback at intensity 2, five engines, approximately
+one-second samples per engine/mode; desktop Chromium, DPR approximately 1.
+Values are ranges across engines, not target-device guarantees.
+
+| Viewport | Mode | Mean FPS range | Synchronous draw p95 range, ms |
+|---|---|---:|---:|
+| 1440 x 1100 | Browsing | 56.89-60.01 | 0.60-2.20 |
+| 1440 x 1100 | Immersive | 59.99-60.01 | 0.60-4.30 |
+| 390 x 844 | Browsing | 58.98-60.00 | 0.60-1.30 |
+| 390 x 844 | Immersive | 59.98-60.03 | 0.50-1.80 |
+
+No uncaught errors in these runs. Frame/draw wrappers did not capture Canvas
+geometry stacks. Measurements exclude GPU completion and independent analysis
+cost; they do not cover long sessions or physical mobile hardware.
+
+### Build, cleanup, and remaining scope
+
+- Static build passed; runtime bytes matched source, including the new
+  `visual-comfort.js`, and development tests were excluded.
+- Built-subpath shared-song playback passed under `/_site/index.html`, continued
+  in immersive Lissajous, and loaded the comfort module with HTTP 200.
+  No uncaught application errors.
+- Restored only verified generated timestamp changes; both source manifest
+  hashes matched their pre-build values.
+- README documents controls, low-motion behavior, thresholds, and the new
+  development-only `tests/visual-comfort-check.js` helpers.
+- Returned the owned active test pages to blank, reset motion emulation, and
+  stopped the task-owned preview. No dependencies installed or commits created.
+- Physical touch devices/high-DPR, non-Chromium browsers, screen-reader
+  user testing, long-session profiling, and human perceived alignment remain
+  unverified. Browser pointer/keyboard/layout tests are not substitutes for them.
+- Phase 5 song-level visual evolution remains unimplemented.

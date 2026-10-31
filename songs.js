@@ -1,9 +1,9 @@
 // Automatically generated. Do not edit by hand.
 window.SONGS = {
   "version": 3,
-  "generatedAt": "2026-10-22T19:02:24.600Z",
+  "generatedAt": "2026-10-31T13:29:25.132Z",
   "folderCount": 14,
-  "totalSongs": 148,
+  "totalSongs": 149,
   "folders": [
     {
       "id": 1,
@@ -1345,9 +1345,16 @@ window.SONGS = {
           "title": "08_The Little Branch",
           "artist": "",
           "artwork": null
+        },
+        {
+          "id": 9,
+          "file": "14 - Mirror World/09_The Greatest Magic.mp3",
+          "title": "09_The Greatest Magic",
+          "artist": "",
+          "artwork": null
         }
       ],
-      "songCount": 8
+      "songCount": 9
     }
   ]
 };
